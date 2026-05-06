@@ -1,0 +1,191 @@
+/**
+ * @ikenga/tokens — canonical design tokens for the Ikenga design system.
+ *
+ * Single source of truth for CSS custom properties used across:
+ *   - shell (Tauri desktop app)
+ *   - every UI pkg (Tasks, Studio, Outbound, …)
+ *
+ * Consumers `@import '@ikenga/tokens/tokens.css'` and inherit the full token
+ * surface. Pkgs running inside the shell iframe additionally receive a
+ * curated subset via the AppBridge `host-context` handshake — those override
+ * these defaults at runtime when the user flips theme/mode in the shell.
+ *
+ * Convention:
+ *   :root                       → mode-agnostic (typography, spacing, radii, shadows)
+ *   :root[data-mode="dark"]     → dark-mode color slots (DEFAULT)
+ *   :root[data-mode="light"]    → light-mode color slots (override)
+ *
+ * `data-theme` is reserved for theme variants beyond the default Ikenga palette
+ * (e.g. seasonal, label-branded). Add `:root[data-theme="X"][data-mode="dark"]`
+ * blocks below the defaults — last-match wins.
+ */
+
+/* ─── mode-agnostic ───────────────────────────────────────────────────────── */
+:root {
+  /* Spacing scale (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Radii */
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-pill: 999px;
+
+  /* Typography */
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --text-caption: 11.5px;
+  --text-body: 13px;
+  --text-h3: 16px;
+  --text-h2: 20px;
+  --text-h1: 28px;
+
+  /* Layout */
+  --header-height: 44px;
+  --sidebar-width: 240px;
+
+  /* Default mode is dark — ensures correct rendering even without
+     [data-mode] attribute set on <html>. */
+  color-scheme: dark;
+}
+
+/* ─── dark mode (DEFAULT) ─────────────────────────────────────────────────── */
+:root,
+:root[data-mode='dark'] {
+  /* Backgrounds */
+  --bg-base: hsl(220, 14%, 8%);
+  --bg-surface: hsl(220, 13%, 11%);
+  --bg-raised: hsl(220, 12%, 14%);
+  --bg-sunken: hsl(220, 14%, 6%);
+
+  /* Foregrounds */
+  --fg: hsl(0, 0%, 96%);
+  --fg-muted: hsl(220, 8%, 58%);
+  --fg-subtle: hsl(220, 8%, 42%);
+
+  /* Borders */
+  --border: hsl(220, 13%, 20%);
+  --border-soft: hsl(220, 13%, 16%);
+  --border-strong: hsl(220, 13%, 28%);
+
+  /* Brand + semantic */
+  --primary: hsl(220, 90%, 60%);
+  --primary-fg: hsl(0, 0%, 100%);
+  --secondary: hsl(220, 12%, 14%);
+  --accent: hsl(280, 70%, 65%);
+  --info: hsl(200, 90%, 60%);
+  --success: hsl(142, 70%, 50%);
+  --warning: hsl(38, 92%, 60%);
+  --danger: hsl(0, 72%, 60%);
+  --agent: hsl(280, 70%, 65%);
+
+  /* Tints (subtle backgrounds for active/hovered states) */
+  --tint-bg-active: hsl(220, 90%, 60%, 0.08);
+  --tint-fg-active: hsl(220, 90%, 70%);
+
+  /* Shadows */
+  --shadow-1: 0 1px 1px hsl(0 0% 0% / 0.3);
+  --shadow-2: 0 1px 2px hsl(0 0% 0% / 0.4);
+  --shadow-3: 0 4px 12px hsl(0 0% 0% / 0.5);
+
+  /* MCP UI Apps schema bridge — these are the names the host pushes via
+     AppBridge `styles.variables`. Map them to Ikenga semantic slots so a pkg
+     that consumes the host context overlay (or one that doesn't) renders the
+     same way. */
+  --color-background-primary: var(--bg-base);
+  --color-background-secondary: var(--bg-surface);
+  --color-background-tertiary: var(--bg-raised);
+  --color-background-inverse: hsl(0, 0%, 96%);
+  --color-background-ghost: transparent;
+  --color-background-info: var(--info);
+  --color-background-danger: var(--danger);
+  --color-background-success: var(--success);
+  --color-background-warning: var(--warning);
+  --color-background-disabled: hsl(220, 13%, 20%);
+
+  --color-text-primary: var(--fg);
+  --color-text-secondary: var(--fg-muted);
+  --color-text-tertiary: var(--fg-subtle);
+  --color-text-inverse: hsl(220, 14%, 8%);
+  --color-text-ghost: var(--fg-muted);
+  --color-text-info: var(--info);
+  --color-text-danger: var(--danger);
+  --color-text-success: var(--success);
+  --color-text-warning: var(--warning);
+  --color-text-disabled: var(--fg-subtle);
+
+  --color-border-primary: var(--border);
+  --color-border-secondary: var(--border-soft);
+  --color-border-tertiary: var(--border-strong);
+  --color-border-inverse: hsl(0, 0%, 96%);
+  --color-border-ghost: transparent;
+  --color-border-info: var(--info);
+  --color-border-danger: var(--danger);
+  --color-border-success: var(--success);
+  --color-border-warning: var(--warning);
+  --color-border-disabled: var(--border-soft);
+
+  --color-ring-primary: var(--primary);
+  --color-ring-secondary: var(--accent);
+  --color-ring-inverse: hsl(0, 0%, 96%);
+  --color-ring-info: var(--info);
+  --color-ring-danger: var(--danger);
+  --color-ring-success: var(--success);
+  --color-ring-warning: var(--warning);
+}
+
+/* ─── light mode ──────────────────────────────────────────────────────────── */
+:root[data-mode='light'] {
+  color-scheme: light;
+
+  --bg-base: hsl(0, 0%, 98%);
+  --bg-surface: hsl(0, 0%, 100%);
+  --bg-raised: hsl(220, 14%, 96%);
+  --bg-sunken: hsl(220, 14%, 94%);
+
+  --fg: hsl(220, 14%, 12%);
+  --fg-muted: hsl(220, 10%, 45%);
+  --fg-subtle: hsl(220, 8%, 60%);
+
+  --border: hsl(220, 13%, 88%);
+  --border-soft: hsl(220, 13%, 93%);
+  --border-strong: hsl(220, 13%, 78%);
+
+  --primary: hsl(220, 90%, 52%);
+  --primary-fg: hsl(0, 0%, 100%);
+  --secondary: hsl(220, 14%, 96%);
+  --accent: hsl(280, 65%, 50%);
+  --info: hsl(200, 90%, 45%);
+  --success: hsl(142, 65%, 38%);
+  --warning: hsl(38, 88%, 48%);
+  --danger: hsl(0, 65%, 48%);
+  --agent: hsl(280, 65%, 50%);
+
+  --tint-bg-active: hsl(220, 90%, 52%, 0.10);
+  --tint-fg-active: hsl(220, 90%, 42%);
+
+  --shadow-1: 0 1px 1px hsl(220 14% 50% / 0.06);
+  --shadow-2: 0 1px 2px hsl(220 14% 50% / 0.08);
+  --shadow-3: 0 4px 12px hsl(220 14% 50% / 0.10);
+
+  --color-background-primary: var(--bg-base);
+  --color-background-secondary: var(--bg-surface);
+  --color-background-tertiary: var(--bg-raised);
+  --color-background-inverse: hsl(220, 14%, 12%);
+  --color-text-primary: var(--fg);
+  --color-text-secondary: var(--fg-muted);
+  --color-text-tertiary: var(--fg-subtle);
+  --color-text-inverse: hsl(0, 0%, 98%);
+  --color-border-primary: var(--border);
+  --color-border-secondary: var(--border-soft);
+  --color-border-tertiary: var(--border-strong);
+}
