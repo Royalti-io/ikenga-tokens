@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/royalti-io/ikenga-tokens.git"
+    "url": "git+https://github.com/Royalti-io/ikenga-tokens.git"
   },
   "type": "module",
   "exports": {
