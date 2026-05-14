@@ -56,6 +56,17 @@
   /* Default mode is dark — ensures correct rendering even without
      [data-mode] attribute set on <html>. */
   color-scheme: dark;
+
+  /* Ikenga brand accents (mode-agnostic). Used by ADR-011 chat redesign:
+     ember = active streaming / hot states; kola-amber = ritual pills,
+     tool calls, artifact pills, cost amounts; oxblood = errors;
+     verdigris = info / passive systemic. */
+  --ember: hsl(14, 78%, 52%);
+  --ember-soft: hsl(14, 70%, 60%);
+  --kola-amber: hsl(42, 78%, 50%);
+  --kola-amber-soft: hsl(42, 60%, 64%);
+  --oxblood: hsl(8, 70%, 42%);
+  --verdigris: hsl(170, 30%, 38%);
 }
 
 /* ─── dark mode (DEFAULT) ─────────────────────────────────────────────────── */
@@ -141,6 +152,14 @@
   --color-ring-danger: var(--danger);
   --color-ring-success: var(--success);
   --color-ring-warning: var(--warning);
+
+  /* Ikenga hairline + chip-carve (mode-specific). `--rule` is the canonical
+     1px divider between turns in the chat; `--rule-soft` is for grouping
+     within a turn; `--chip-carve` is the dim ink used for the ▽▽▽ motif
+     and uppercase mono labels. */
+  --rule: hsl(28, 14%, 18%);
+  --rule-soft: hsl(28, 12%, 14%);
+  --chip-carve: hsl(28, 14%, 32%);
 }
 
 /* ─── light mode ──────────────────────────────────────────────────────────── */
@@ -188,6 +207,11 @@
   --color-border-primary: var(--border);
   --color-border-secondary: var(--border-soft);
   --color-border-tertiary: var(--border-strong);
+
+  /* Light-mode hairline + chip-carve. See dark-mode block for semantics. */
+  --rule: hsl(36, 14%, 84%);
+  --rule-soft: hsl(36, 14%, 90%);
+  --chip-carve: hsl(28, 14%, 62%);
 }
 /* === Theme A · Dusk Wood (canonical default) ==================== */
 [data-theme="A"][data-mode="dark"] {
