@@ -160,6 +160,25 @@
   --rule: hsl(28, 14%, 18%);
   --rule-soft: hsl(28, 12%, 14%);
   --chip-carve: hsl(28, 14%, 32%);
+
+  /* Code editor syntax palette (dark). Consumed by @ikenga/ui-lib's
+     CodeEditor via CodeMirror 6 highlight tags. Tuned for HTML/TSX/CSS
+     legibility on top of `--bg-surface`. */
+  --syntax-keyword:     hsl(280, 70%, 72%);
+  --syntax-string:      hsl(160, 55%, 60%);
+  --syntax-comment:     hsl(220, 10%, 50%);
+  --syntax-number:      hsl(28, 78%, 64%);
+  --syntax-atom:        hsl(28, 78%, 64%);
+  --syntax-regexp:      hsl(330, 60%, 64%);
+  --syntax-operator:    hsl(0, 0%, 86%);
+  --syntax-punctuation: hsl(220, 8%, 62%);
+  --syntax-variable:    hsl(0, 0%, 92%);
+  --syntax-function:    hsl(200, 80%, 68%);
+  --syntax-type:        hsl(180, 60%, 64%);
+  --syntax-tag:         hsl(0, 70%, 66%);
+  --syntax-attribute:   hsl(42, 80%, 64%);
+  --syntax-heading:     hsl(0, 0%, 96%);
+  --syntax-link:        hsl(200, 90%, 62%);
 }
 
 /* ─── light mode ──────────────────────────────────────────────────────────── */
@@ -212,6 +231,23 @@
   --rule: hsl(36, 14%, 84%);
   --rule-soft: hsl(36, 14%, 90%);
   --chip-carve: hsl(28, 14%, 62%);
+
+  /* Code editor syntax palette (light). See dark block for semantics. */
+  --syntax-keyword:     hsl(280, 70%, 38%);
+  --syntax-string:      hsl(160, 55%, 30%);
+  --syntax-comment:     hsl(220, 10%, 48%);
+  --syntax-number:      hsl(28, 78%, 38%);
+  --syntax-atom:        hsl(28, 78%, 38%);
+  --syntax-regexp:      hsl(330, 60%, 40%);
+  --syntax-operator:    hsl(220, 14%, 18%);
+  --syntax-punctuation: hsl(220, 10%, 42%);
+  --syntax-variable:    hsl(220, 14%, 14%);
+  --syntax-function:    hsl(220, 90%, 40%);
+  --syntax-type:        hsl(180, 60%, 30%);
+  --syntax-tag:         hsl(0, 70%, 42%);
+  --syntax-attribute:   hsl(42, 90%, 36%);
+  --syntax-heading:     hsl(220, 14%, 12%);
+  --syntax-link:        hsl(200, 90%, 40%);
 }
 /* === Theme A · Dusk Wood (canonical default) ==================== */
 [data-theme="A"][data-mode="dark"] {
