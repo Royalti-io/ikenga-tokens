@@ -1,6 +1,17 @@
 # @ikenga/tokens
 
-Canonical design tokens for the Ikenga design system. Single source of truth for CSS custom properties used across the shell and every UI pkg.
+[![Version](https://img.shields.io/badge/version-v0.0.0-blue.svg)](https://github.com/Royalti-io/ikenga-tokens/releases)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+
+> Canonical design tokens for Ikenga — one source of truth for the CSS custom properties
+> the shell and every UI pkg share.
+
+## What it is
+
+`@ikenga/tokens` is the design-system package consumed by the
+[Ikenga shell](https://github.com/Royalti-io/ikenga) and every UI pkg. It ships the full
+set of `:root` custom properties (dark default + light) plus TypeScript helpers, so a pkg
+mini-app looks native inside the shell without redefining a palette.
 
 ## Install
 
@@ -27,8 +38,8 @@ This defines the full set of `:root` custom properties for both `data-mode="dark
 ```ts
 import { setMode, applyHostStyles, MCP_UI_APPS_TOKEN_KEYS } from '@ikenga/tokens';
 
-setMode('light');                         // flip mode
-applyHostStyles(hostContext.styles.variables); // apply incoming CSS vars from AppBridge
+setMode('light');                               // flip mode
+applyHostStyles(hostContext.styles.variables);  // apply incoming CSS vars from AppBridge
 ```
 
 ## Token surface
@@ -50,6 +61,11 @@ Pkgs run in isolated iframes and can't share the shell's stylesheet. Without a s
 
 For live theme flips (user toggles dark/light at runtime), the shell additionally pushes a curated subset of these tokens to each pkg via the AppBridge `host-context-changed` notification — apply with `applyHostStyles()`. Tokens outside the MCP UI Apps schema allowlist (spacing, radii, typography, custom semantic slots) are picked up at build time only.
 
+## Links
+
+- [ikenga.dev](https://ikenga.dev) — site + docs
+- [`ikenga`](https://github.com/Royalti-io/ikenga) — the desktop shell
+
 ## License
 
-Apache-2.0
+Apache-2.0 — see [`LICENSE`](LICENSE).
