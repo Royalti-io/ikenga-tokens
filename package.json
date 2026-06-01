@@ -1,6 +1,6 @@
 {
   "name": "@ikenga/tokens",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Canonical design tokens for the Ikenga design system. CSS custom properties + TypeScript references. Shared by the shell and every UI pkg.",
   "license": "Apache-2.0",
   "repository": {
