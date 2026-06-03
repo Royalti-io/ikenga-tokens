@@ -1,0 +1,378 @@
+/* Part: toolbar-facet-sidebar  (Patterns)
+ * Sources:
+ *   plans/atelier/designs/atelier-tasks.html       (.tk-filterbar · .frame-head · sidebar facet groups)
+ *   plans/atelier/designs/atelier-finance.html     (.fin-filterbar · #fin-toolbar sticky container)
+ *   plans/atelier/designs/atelier-outbound.html    (.ob-subnav · .nl-inner-tabs · .nl-sent-toolbar · .ob-filter-chip)
+ *
+ * This partial owns ONLY the LAYOUT / COMPOSITION CSS for the pattern:
+ *   • .pane-toolbar          — sticky content-body toolbar shell (wraps a filterbar or subnav)
+ *   • .pane-toolbar-sticky   — modifier: sticks to the top of .content-body at z-index 4
+ *   • .pane-toolbar-tint     — modifier: applies workspace-tint gradient identical to .frame-head
+ *   • .pane-filterbar        — canonical filter bar shell (reconciles .tk-filterbar / .fin-filterbar)
+ *   • .pane-filterbar-search — icon-prepended search input wrapper
+ *   • .pane-filterbar-label  — mono uppercase label preceding a select or chip group
+ *   • .pane-filterbar-spacer — flex spacer between left filters and right meta/actions
+ *   • .pane-filterbar-meta   — tabular count / status string (right-aligned)
+ *   • .pane-subnav           — pill-button sub-navigation strip (reconciles .ob-subnav)
+ *   • .pane-subnav-count     — mono pill count badge inside a .pane-subnav button
+ *   • .pane-subnav-alert     — danger dot alerting on a subnav button
+ *   • .pane-inner-tabs       — pill-style inner view tabs (reconciles .nl-inner-tabs)
+ *   • .pane-filter-chip      — standalone pill chip for sent-history filters
+ *   • .pane-view-toggle      — segmented table/chart toggle (right-pushed)
+ *
+ * NOT owned here — referenced by composition:
+ *   .btn-icon          — icon button (part 10, button.css)
+ *   .input             — form input field (part 12, input-field.css)
+ *   .side-menu-nav     — sidebar nav groups incl. facet groups (part 22, side-menu-nav.css)
+ *   .nav-group.is-dim  — list-only facet dim rule (part 22)
+ *   .content-tabs / .content-tabs-actions  — tab strip chrome (shell shared)
+ *
+ * Merge narrative:
+ *   atelier-tasks.html defines .tk-filterbar (flex row, bg-sunken, border-bottom-soft,
+ *   space-3/space-5 pad). atelier-finance.html defines .fin-filterbar with identical
+ *   geometry but adds date inputs + an EntitySwitcher on the right. atelier-outbound.html
+ *   defines three complementary strips: .ob-subnav (ghost-pill outer nav), .nl-inner-tabs
+ *   (bordered-pill inner view tabs), and .nl-sent-toolbar (chip filter + view toggle).
+ *   All four source classes are canonicalised here under a shared `.pane-filterbar` shell
+ *   plus the narrow specialisations. Hardcoded pixel values that have no token (13px
+ *   search icon, 28px compact control height, 1px divider hairline, 6px alert dot) are
+ *   structural fixed-geometry and are preserved as px.
+ * ---------------------------------------------------------------- */
+
+
+/* ================================================================
+   STICKY TOOLBAR SHELL
+   Wraps the filterbar or subnav inside .content-body.
+   z-index 4 matches the value used by #fin-toolbar and .tk-group-head.
+   ================================================================ */
+
+.pane-toolbar {
+  /* Surface is bg-sunken by default — same as the filterbar strips.
+     Override with .pane-toolbar-tint for a workspace-tinted head. */
+  background: var(--bg-sunken);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.pane-toolbar-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+}
+
+/* Workspace-tinted variant — mirrors .frame-head gradient.
+   Apply alongside .pane-toolbar when the toolbar leads the body. */
+.pane-toolbar.pane-toolbar-tint {
+  background: linear-gradient(
+    180deg,
+    var(--tint-bg-active, var(--bg-surface)) 0%,
+    var(--bg-surface) 100%
+  );
+}
+
+
+/* ================================================================
+   PANE FILTER BAR
+   Horizontal flex strip: search · label · select · [toggle] · spacer · meta.
+   Reconciles .tk-filterbar (tasks) and .fin-filterbar (finance).
+   ================================================================ */
+
+.pane-filterbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  /* background and border-bottom inherited from .pane-toolbar parent;
+     this rule only governs layout so the bar may also be used standalone. */
+  background: var(--bg-sunken);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+/* Icon-prepended search wrapper.
+   Icon is positioned absolutely at left: 8px (fixed geometry). */
+.pane-filterbar-search {
+  position: relative;
+  display: inline-flex;
+}
+
+.pane-filterbar-search > svg {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 13px;   /* icon fixed geometry */
+  height: 13px;
+  color: var(--fg-faint);
+  pointer-events: none;
+}
+
+/* The input inside the search wrapper.
+   Composes .input (part 12) for border/focus/bg — only overrides size. */
+.pane-filterbar-search > input {
+  width: 280px;
+  height: 28px;       /* compact control height — no density token */
+  padding: 0 var(--space-3) 0 28px;   /* 28px = 8px left-gap + 13px icon + 7px gap */
+  font-size: var(--text-body-sm);
+  background: var(--bg-base);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+  font-family: inherit;
+}
+
+.pane-filterbar-search > input::placeholder {
+  color: var(--fg-faint);
+}
+
+/* Compact selects and date inputs share the same control height. */
+.pane-filterbar select,
+.pane-filterbar input[type="date"] {
+  height: 28px;
+  padding: 0 var(--space-2);
+  font-size: var(--text-body-sm);
+  background: var(--bg-base);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+  font-family: inherit;
+}
+
+/* date input: inherit color-scheme from html data-mode so native
+   calendar matches the shell theme. */
+.pane-filterbar input[type="date"] {
+  color-scheme: dark;
+}
+[data-mode="light"] .pane-filterbar input[type="date"] {
+  color-scheme: light;
+}
+
+/* Uppercase mono label preceding a select or chip cluster. */
+.pane-filterbar-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+
+/* Flex spacer — pushes right-side meta / entity-switcher to the edge. */
+.pane-filterbar-spacer {
+  flex: 1;
+}
+
+/* Tabular row count / status string — right-aligned, mono. */
+.pane-filterbar-meta {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--fg-faint);
+}
+
+
+/* ================================================================
+   PANE SUB-NAV  (.ob-subnav)
+   Ghost-pill outer sub-navigation — workspace-tinted active state.
+   Used by Outbound to switch between Channels on mobile-style screens
+   where the sidebar is not the primary channel switcher.
+   ================================================================ */
+
+.pane-subnav {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.pane-subnav button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 0;
+  font-family: inherit;
+  font-size: var(--text-body-sm);
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-calm),
+    color var(--motion-fast) var(--ease-calm);
+}
+
+.pane-subnav button:hover {
+  color: var(--fg);
+}
+
+.pane-subnav button.is-on {
+  color: var(--tint-fg-active, var(--primary));
+  background: color-mix(in srgb, var(--tint-fg-active, var(--primary)) 8%, transparent);
+}
+
+/* Mono pill badge inside a subnav button. */
+.pane-subnav-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--fg-faint);
+  padding: 1px var(--space-2);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-pill);
+  background: var(--bg-base);
+}
+
+.pane-subnav button.is-on .pane-subnav-count {
+  color: var(--tint-fg-active, var(--primary));
+  border-color: color-mix(in srgb, var(--tint-fg-active, var(--primary)) 30%, var(--border));
+}
+
+/* Danger alert dot on a subnav item (e.g. items overdue in a channel). */
+.pane-subnav-alert {
+  display: inline-block;
+  width: 6px;    /* fixed geometry — no token */
+  height: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+  margin-left: var(--space-1);
+}
+
+
+/* ================================================================
+   PANE INNER TABS  (.nl-inner-tabs)
+   Bordered-pill view switcher rendered inside the content body,
+   below the domain header / channel sub-nav. Switches Approval queue /
+   Schedule / Sent within the active channel.
+   ================================================================ */
+
+.pane-inner-tabs {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.pane-inner-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--bg-base);
+  border: 1px solid var(--border-soft);
+  font-family: inherit;
+  font-size: var(--text-body-sm);
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-calm),
+    border-color var(--motion-fast) var(--ease-calm),
+    color var(--motion-fast) var(--ease-calm);
+}
+
+.pane-inner-tabs button.is-on {
+  background: color-mix(in srgb, var(--tint-fg-active, var(--primary)) 14%, var(--bg-base));
+  border-color: var(--tint-fg-active, var(--primary));
+  color: var(--tint-fg-active, var(--primary));
+}
+
+/* Count label inside an inner tab button. */
+.pane-inner-tabs .ct {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--fg-faint);
+}
+
+.pane-inner-tabs button.is-on .ct {
+  color: color-mix(in srgb, var(--tint-fg-active, var(--primary)) 70%, var(--fg-muted));
+}
+
+
+/* ================================================================
+   PANE FILTER CHIP  (.ob-filter-chip)
+   Standalone pill chip used in secondary filter toolbars
+   (e.g. sent-history: "All types" / "Newsletter" / "Investor update").
+   ================================================================ */
+
+.pane-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 3px var(--space-2);
+  background: var(--bg-base);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-calm),
+    border-color var(--motion-fast) var(--ease-calm),
+    color var(--motion-fast) var(--ease-calm);
+}
+
+.pane-filter-chip.is-on {
+  background: color-mix(in srgb, var(--tint-fg-active, var(--primary)) 14%, var(--bg-base));
+  border-color: var(--tint-fg-active, var(--primary));
+  color: var(--tint-fg-active, var(--primary));
+}
+
+
+/* ================================================================
+   PANE VIEW TOGGLE  (.nl-view-toggle)
+   Segmented two-button toggle (Table / Charts) pushed right by the
+   flex spacer in its parent toolbar.
+   ================================================================ */
+
+.pane-view-toggle {
+  display: inline-flex;
+  background: var(--bg-base);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-left: auto;  /* self-push when not already in a spacer context */
+}
+
+.pane-view-toggle button {
+  background: none;
+  border: 0;
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-calm),
+    color var(--motion-fast) var(--ease-calm);
+}
+
+.pane-view-toggle button.is-on {
+  background: var(--bg-raised);
+  color: var(--fg);
+}
+
+
+/* ================================================================
+   SIDEBAR FACET GROUP LAYOUT COMPOSITION
+   The sidebar's "Filter" nav-groups are rendered via .nav-group /
+   .nav-item (part 22, side-menu-nav.css). This partial only owns the
+   dim-and-inert rule for list-only facets (R23 — tasks pane), because
+   .nav-group.is-dim is set by JS (not by side-menu-nav.css) and is
+   conceptually part of the toolbar-facet-sidebar coordination contract.
+   All other .nav-group / .nav-item rules live in part 22.
+   ================================================================ */
+
+/* List-only facet groups dim + go pointer-inert when a non-list view is
+   active. Set by JS: slot.querySelectorAll('.nav-group[data-kind="filter"]')
+   .forEach(g => g.classList.toggle('is-dim', view !== 'tasks')). */
+.nav-group[data-kind="filter"].is-dim {
+  opacity: 0.4;
+  pointer-events: none;
+  transition: opacity var(--motion-base) var(--ease-calm);
+}

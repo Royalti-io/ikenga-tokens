@@ -1,0 +1,492 @@
+/* Part: list-detail  (Patterns / Layout)
+ * Sources:
+ *   plans/atelier/designs/atelier-tasks.html
+ *     — .ld-split / .ld-list / .ld-divider / .ld-detail  (master-detail shell)
+ *     — .tk-group-head  (sticky group separator, tasks pane line 1099–1119)
+ *   plans/atelier/designs/atelier-research.html
+ *     — .pane-split (line 953)
+ *     — .pl-list / .pl-list-head / .pl-list-title / .pl-list-meta (lines 1066–1070)
+ *     — .pl-sec (lines 1071–1073)
+ *     — .pl-row / .pl-row-accent / .pl-row-body / .pl-row-title
+ *       .pl-row-sub / .pl-row-right / .pl-row-amt / .pl-row-when (lines 1074–1086)
+ *     — .pl-detail / .pl-detail-wrap / .pl-detail-eyebrow (lines 1088–1090)
+ *     — .pl-detail-title / .pl-detail-co / .pl-facts / .pl-fact-k / .pl-fact-v (lines 1091–1096)
+ *     — .pl-next / .pl-next-head / .pl-next-body (lines 1097–1101)
+ *     — .pl-timeline / .pl-tl-row / .pl-tl-dot / .pl-tl-when (lines 1102–1106)
+ *
+ * Merge narrative:
+ *   Both panes share an identical structural shape: a scrollable master list on
+ *   the left and a contextual detail view on the right, separated by a 4px
+ *   drag handle. This pattern layer sits ABOVE the inspector-detail component
+ *   part (25-inspector-detail.css) which owns the shell primitives
+ *   (.ip-split / .ip-split-list / .ip-split-divider / .ip-split-pane).
+ *
+ *   This file owns the list-column specialisation classes (.split-list-*,
+ *   .split-group, .split-row, .split-row-*) and the detail-column
+ *   content layout classes (.split-detail-*) that sit inside the shell
+ *   primitives. It does NOT redefine .ip-split or its children.
+ *
+ *   The research pane uses .pl-* (pipeline list); the tasks pane uses
+ *   .ld-list + .tk-group-head. Both are canonical instances of the same
+ *   pattern. The canonical classes below generalise both lineages under
+ *   the .split-* namespace.
+ *
+ * Owned classes:
+ *   List column header:
+ *     .split-list-head  .split-list-title  .split-list-meta
+ *   Filter bar (optional, inside .ip-split-list):
+ *     .split-filter
+ *   Group header (sticky, collapsible):
+ *     .split-group  .split-group.is-danger  .split-group.is-collapsed
+ *     .split-group-chev
+ *   List row:
+ *     .split-row  .split-row.is-selected  .split-row.is-on
+ *     .split-row-accent  .split-row-body  .split-row-title
+ *     .split-row-sub  .split-row-right  .split-row-meta
+ *     .split-row-amt  .split-row-when  .split-row-when.is-urgent
+ *   Detail column layout:
+ *     .split-detail  .split-detail-wrap
+ *     .split-detail-eyebrow  .split-detail-title  .split-detail-sub
+ *   Facts grid (key–value card):
+ *     .split-facts  .split-fact-k  .split-fact-v
+ *   Next-action card:
+ *     .split-next  .split-next-head  .split-next-body
+ *   Mini activity timeline (list-side only; deep timeline → ip-timeline):
+ *     .split-timeline  .split-tl-row  .split-tl-dot  .split-tl-when
+ *
+ * NOT owned here — compose into this pattern:
+ *   .ip-split / .ip-split-list / .ip-split-divider / .ip-split-pane
+ *                      — inspector-detail part (25)
+ *   .ip-head / .ip-body / .ip-title / .ip-meta-row
+ *                      — inspector-detail part (25)
+ *   .ip-timeline / .ip-tl-item / .ip-tl-when / .ip-tl-actor
+ *                      — inspector-detail part (25)
+ *   .badge / .chip / .tag / .next-chip
+ *                      — badge-tag-chip part (11)
+ *   .btn / .btn-sm     — button part (10)
+ *   .frame / .card     — card part (21)
+ *   .tabs / .tab       — segmented-tabs part (14)
+ * ---------------------------------------------------------------- */
+
+/* === List column header ======================================== */
+/*
+ * Sticky header inside .ip-split-list. Generalised from:
+ *   .pl-list-head (research line 1067) — display + title + meta count.
+ * The header is always position:sticky top:0 so the domain label
+ * stays visible as the user scrolls through a long list.
+ */
+
+.split-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-surface);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  flex-shrink: 0;
+}
+
+/* Domain / route label — display weight (e.g. "Research", "Tasks") */
+.split-list-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-h3);
+  color: var(--fg);
+}
+
+/* Right-side aggregate (e.g. "8 open", "34 · 7 closed") */
+.split-list-meta {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--fg-faint);
+  letter-spacing: 0.04em;
+}
+
+/* === Filter bar (optional) ===================================== */
+/*
+ * Generalised from the .tk-filter-bar (tasks pane) and inline filter
+ * controls (research pane). Sits below .split-list-head; also
+ * position:sticky so it scrolls with the header as a unit.
+ * Callers compose .input-field part (12) elements inside this bar.
+ */
+
+.split-filter {
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-surface);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  position: sticky;
+  top: 0;
+  z-index: 4;                                     /* below .split-list-head z-index:5 */
+  flex-shrink: 0;
+}
+
+/* === Group header (sticky, collapsible) ======================== */
+/*
+ * Generalised from .tk-group-head (tasks pane lines 1099–1119) and
+ * .pl-sec (research pane lines 1071–1073).
+ * Groups are sticky within the list column scroll container.
+ * Mono uppercase label + right-side count; optionally collapsible
+ * via .is-collapsed (chevron rotates −90°).
+ */
+
+.split-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-4) var(--space-1) var(--space-3);
+  background: var(--bg-sunken);
+  border-bottom: 1px solid var(--border-soft);
+  border-top: 1px solid var(--border-soft);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Remove the top border from the very first group in the list */
+.split-group:first-child {
+  border-top: 0;
+}
+
+/* Danger / overdue group (e.g. "Overdue · 2" in tasks pane) */
+.split-group.is-danger {
+  color: var(--danger);
+}
+
+/* Collapsed: background lifts to --bg-base to signal closed state */
+.split-group.is-collapsed {
+  background: var(--bg-base);
+}
+
+/* Count slot — tabular numerals, slightly brighter than the label */
+.split-group .ct {
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Danger group count matches its label colour */
+.split-group.is-danger .ct {
+  color: var(--danger);
+}
+
+/* Expand/collapse chevron SVG (10×10px icon — structural size) */
+.split-group-chev {
+  width: 10px;
+  height: 10px;
+  color: var(--fg-faint);
+  transition: transform var(--motion-fast) var(--ease-calm);
+  flex-shrink: 0;
+}
+
+.split-group.is-collapsed .split-group-chev {
+  transform: rotate(-90deg);
+}
+
+/* === List row ================================================== */
+/*
+ * Generalised from:
+ *   .pl-row (research lines 1074–1086) — 3-column grid: accent | body | right
+ *   .ld-list rows (tasks) — same grid pattern (the task row uses .tk-row but
+ *     shares the same left-accent + body + right shape)
+ *
+ * Internal grid: 4px accent rail | 1fr body | auto right column.
+ * The 4px accent width is structural fixed-geometry (hairline affordance).
+ */
+
+.split-row {
+  display: grid;
+  grid-template-columns: 4px 1fr auto;
+  gap: var(--space-2);
+  padding: calc(var(--row-pad-y) + var(--space-1)) var(--space-4);
+  border-bottom: 1px solid var(--border-soft);
+  cursor: pointer;
+  position: relative;
+  transition: background var(--motion-fast) var(--ease-calm);
+}
+
+.split-row:hover {
+  background: var(--bg-raised);
+}
+
+/* Selected / active: raised background — both .is-selected (pointer)
+   and .is-on (keyboard) are valid selection signals */
+.split-row.is-selected,
+.split-row.is-on {
+  background: var(--bg-raised);
+}
+
+/* --- Left accent rail ----------------------------------------- */
+/*
+ * 4px narrow left-edge indicator. Transparent by default; fills with
+ * the workspace tint (or primary) when the row is selected.
+ * Also used for unread indicators (e.g. mail pane .is-unread uses primary).
+ */
+
+.split-row-accent {
+  width: 4px;                                     /* structural fixed-geometry */
+  border-radius: 2px;                             /* structural half of 4px */
+  background: transparent;
+  align-self: stretch;
+}
+
+.split-row.is-selected .split-row-accent,
+.split-row.is-on .split-row-accent {
+  background: var(--tint-fg-active, var(--primary));
+}
+
+/* --- Body column (title + sub-rows) ---------------------------- */
+
+.split-row-body {
+  min-width: 0;                                   /* allow text-overflow in flex/grid child */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* Primary title — truncated to one line in the compressed column */
+.split-row-title {
+  font-size: var(--text-body-sm);
+  font-weight: 500;
+  color: var(--fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.35;
+}
+
+/* Sub-row (meta chips: type, owner, next-chip) */
+.split-row-sub {
+  font-size: var(--text-caption);
+  color: var(--fg-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Meta chip cluster (badges, owner chips) — flex tray */
+.split-row-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+
+/* --- Right column (amount + timestamp) ------------------------- */
+
+.split-row-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;                                       /* tight fixed-geometry between cells */
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Primary scalar value (word count, deal amount, entry count) */
+.split-row-amt {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--fg);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Relative timestamp ("Today", "2d", "Next wk") */
+.split-row-when {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-faint);
+  white-space: nowrap;
+}
+
+/* Overdue / urgent signal: danger colour on the timestamp */
+.split-row-when.is-urgent {
+  color: var(--danger);
+}
+
+/* === Detail column layout ====================================== */
+/*
+ * .split-detail wraps .ip-split-pane content when the domain's
+ * detail view uses the softer pipeline shape (research, deals)
+ * rather than the full inspector-head anatomy (.ip-head).
+ * It adds inner padding and max-width on the content well.
+ *
+ * Callers who need the richer inspector head should compose
+ * .ip-head / .ip-topline / .ip-title from the inspector-detail part (25).
+ * These classes are for the lighter "pipeline detail" shape from the
+ * research pane.
+ */
+
+.split-detail {
+  overflow-y: auto;
+  background: var(--bg-surface);
+}
+
+/* Inner content well — capped width + generous padding */
+.split-detail-wrap {
+  padding: var(--space-6) var(--space-7);
+  max-width: 720px;
+}
+
+/* Eyebrow row (stage chip + next-mode chip) above the title */
+.split-detail-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+/* Display-weight entity title (e.g. "ICP: independent African labels") */
+.split-detail-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-h2);
+  line-height: 1.15;
+  letter-spacing: -0.012em;
+  color: var(--fg);
+  margin: 0 0 var(--space-2);
+}
+
+/* Secondary subtitle (type · owner, e.g. "Persona · nedjamez") */
+.split-detail-sub {
+  font-size: var(--text-body);
+  color: var(--fg-muted);
+  margin-bottom: var(--space-5);
+}
+
+/* === Facts grid ================================================= */
+/*
+ * Generalised from .pl-facts / .pl-fact-k / .pl-fact-v
+ * (research pane lines 1093–1096).
+ * Horizontal three-column card of key–value pairs (Type, Detail, Updated).
+ * Callers may override grid-template-columns for 2- or 4-column variants.
+ */
+
+.split-facts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  background: var(--bg-sunken);
+}
+
+/* Fact label — mono uppercase micro-heading */
+.split-fact-k {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  margin-bottom: 3px;                             /* tight fixed-geometry: label–value gap */
+}
+
+/* Fact value */
+.split-fact-v {
+  font-size: var(--text-body);
+  color: var(--fg);
+  font-weight: 500;
+}
+
+/* === Next-action card ========================================= */
+/*
+ * Generalised from .pl-next / .pl-next-head / .pl-next-body
+ * (research pane lines 1097–1101).
+ * Tinted card that surfaces the single actionable next step for the
+ * selected item. Bordered with --live-soft to signal agent activity.
+ */
+
+.split-next {
+  border: 1px solid var(--live-soft, var(--border-soft));
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--live) 7%, transparent);
+  margin-bottom: var(--space-5);
+}
+
+/* "Next action" label — mono uppercase, small */
+.split-next-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin-bottom: var(--space-2);
+}
+
+/* Body text — the human-readable next action description */
+.split-next-body {
+  font-size: var(--text-body);
+  color: var(--fg);
+  line-height: 1.5;
+  margin-bottom: var(--space-3);
+}
+
+/* === Mini activity timeline (list-side) ======================== */
+/*
+ * Simplified timeline used inside the detail pane when only a short
+ * activity log is needed (research pane lines 1102–1106).
+ * For the full dashed-rail timeline compose .ip-timeline from
+ * the inspector-detail part (25) instead.
+ *
+ * This variant uses a 3-column grid: 14px dot rail | 1fr text.
+ * The 14px rail and 8px dot are structural fixed-geometry.
+ */
+
+.split-timeline {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.split-tl-row {
+  display: grid;
+  grid-template-columns: 14px 1fr;               /* 14px rail — fixed geometry */
+  gap: var(--space-3);
+  font-size: var(--text-body-sm);
+  color: var(--fg-muted);
+}
+
+/* 8px filled circle node — structural icon geometry */
+.split-tl-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  margin-top: 5px;                               /* optical alignment with first text line */
+  flex-shrink: 0;
+}
+
+/* Relative timestamp — mono, faint */
+.split-tl-when {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-faint);
+  letter-spacing: 0.04em;
+}
+
+/* === Reduced-motion override =================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .split-row,
+  .split-group-chev {
+    transition: none;
+  }
+}

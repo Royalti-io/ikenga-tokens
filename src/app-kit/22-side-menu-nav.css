@@ -1,0 +1,156 @@
+/*
+ * Part 22 — Side-menu nav (nav-group / nav-item)
+ * Tier: Components / Navigation
+ * Source panes:
+ *   plans/atelier/designs/atelier-tasks.html    lines 644–673  (view + filter groups + is-dim; R23-R32)
+ *   plans/atelier/designs/atelier-obi-home.html lines 642–669  (same recipe; confirms vocabulary)
+ *
+ * Owned classes:
+ *   .nav-group       .nav-group-label       .nav-group[data-kind="view"]
+ *   .nav-group[data-kind="filter"]          .nav-group[data-kind="nav"]
+ *   .nav-group.is-dim
+ *   .nav-item        .nav-item-count
+ *   .nav-item.is-on  .nav-item.is-hot
+ *
+ * Merge note:
+ *   Both source panes carry a verbatim-identical block. The only difference is
+ *   the `data-kind` stamping + `is-dim` behaviour which lives only in
+ *   atelier-tasks.html (R23 comment). This partial is the canonical merge of
+ *   both; .nav-group-<kind> modifier classes expose kind as CSS without needing
+ *   attribute selectors in consumer code, while the data-kind attributes (stamped
+ *   by the sidebar() builder) stay as semantic hooks for JS (view-switch dim
+ *   logic). Fixed pixel values: 8px horizontal padding (structural inset, no
+ *   space token maps to 8 px at a sidebar density), 14 px icon, 2 px active
+ *   indicator — all structural geometry, not colour/radius/spacing-scale.
+ */
+
+/* ── Group container ─────────────────────────────────────────────── */
+
+.nav-group {
+  margin-top: var(--space-3);
+}
+
+.nav-group:first-child {
+  margin-top: 0;
+}
+
+/* ── Group label (mono-uppercase eyebrow) ────────────────────────── */
+
+.nav-group-label {
+  font-family: var(--font-mono);
+  font-size: 9.5px;                     /* sub-scale: no token maps here */
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  padding: 0 var(--space-2) var(--space-1);
+}
+
+/* ── Kind modifiers (behavioural; match JS data-kind stamps) ─────── */
+/*
+ * .nav-group-view    — view-switcher group (Tasks / Agenda / Triage / Sweeper / Done).
+ *                      Always visible; items set the in-pane tab context.
+ * .nav-group-filter  — facet / filter group (All tasks / Today / By domain / …).
+ *                      List-only: dims + goes inert when the active view is non-list.
+ * .nav-group-nav     — general navigation (labels, workspaces, sections).
+ *                      No additional behaviour beyond base.
+ *
+ * No extra visual treatment beyond the base group — kind affects runtime JS only.
+ * CSS consumers may target [data-kind="filter"] for the is-dim rule if needed.
+ */
+
+/* ── Dim + inert state (R23 — filter groups on non-list views) ────── */
+
+.nav-group.is-dim {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ── Nav item ────────────────────────────────────────────────────── */
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--row-pad-y) 8px;        /* 8px = structural sidebar inset, no token */
+  border-radius: var(--radius-sm);
+  color: var(--fg-muted);
+  font-size: var(--body-size);
+  cursor: pointer;
+  position: relative;
+  transition:
+    background var(--motion-fast) var(--ease-calm),
+    color var(--motion-fast) var(--ease-calm);
+}
+
+/* Icon child — 14 px is a fixed icon geometry, not a spacing token */
+.nav-item svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+/* Trailing count badge — mono, tabular, faint */
+.nav-item-count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10.5px;                    /* sub-scale: no token maps here */
+  color: var(--fg-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Hover ───────────────────────────────────────────────────────── */
+
+.nav-item:hover {
+  background: var(--bg-raised);
+  color: var(--fg);
+}
+
+.nav-item:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+/* ── Active / selected state ─────────────────────────────────────── */
+
+.nav-item.is-on {
+  background: var(--bg-raised);
+  color: var(--fg);
+}
+
+/*
+ * Left-edge active indicator — 2 px strip with 2 px radius.
+ * left: -2px positions it flush with the sidebar body padding edge
+ * (sidebar-body adds var(--space-2) padding; the indicator bleeds into that).
+ * top/bottom 6px gives visual breathing room; 2px width + 2px radius are
+ * fixed structural geometry (not spacing-scale).
+ */
+.nav-item.is-on::before {
+  content: '';
+  position: absolute;
+  left: -2px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--tint-fg-active, var(--primary));
+}
+
+.nav-item.is-on svg {
+  color: var(--tint-fg-active, var(--primary));
+  opacity: 1;
+}
+
+/* ── Hot / urgent modifier — count highlights in achievement amber ── */
+
+.nav-item.is-hot .nav-item-count {
+  color: var(--achievement);
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-item {
+    transition: none;
+  }
+}

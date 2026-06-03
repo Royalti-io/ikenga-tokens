@@ -1,0 +1,176 @@
+/* =============================================================================
+   Atelier design-system · Part 12 — Input Field
+   Tier: Components / group: Inputs / source mode: shared
+   Source pane: design/shell/concepts/_shared/components.css (Form section)
+   Owned classes: .input, .textarea, .field, .field-label, .field-help,
+                  .input-group, .input-addon, .input-addon-right, kbd
+   Merge: focus-visible ring added; .input-error applies --danger ring via
+          box-shadow; kbd isolated from .input-addon to avoid over-specificity.
+   ============================================================================= */
+
+/* ── Base text input ─────────────────────────────────────────────────────── */
+.input {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  height: var(--input-h);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-sunken);
+  color: var(--fg);
+  width: 100%;
+  transition:
+    border-color var(--motion-fast) var(--ease-calm),
+    background   var(--motion-fast) var(--ease-calm),
+    box-shadow   var(--motion-fast) var(--ease-calm);
+}
+
+.input::placeholder {
+  color: var(--fg-faint);
+}
+
+.input:hover {
+  border-color: var(--fg-faint);
+}
+
+/* focus — border + primary ring for keyboard-visible focus */
+.input:focus,
+.input:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--bg-surface);
+  box-shadow: 0 0 0 2px var(--primary-soft);
+}
+
+.input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* error state — danger border + danger ring */
+.input.input-error {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 2px var(--danger-soft);
+}
+
+/* error persists on focus */
+.input.input-error:focus,
+.input.input-error:focus-visible {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 2px var(--danger-soft);
+}
+
+/* ── Textarea ─────────────────────────────────────────────────────────────── */
+/* Extends .input — apply both classes: <textarea class="input textarea"> */
+.textarea {
+  padding: var(--space-2) var(--space-3);
+  height: auto;
+  min-height: 80px;
+  line-height: var(--lead-body);
+  resize: vertical;
+}
+
+/* ── Field wrapper (label + input + help text) ───────────────────────────── */
+.field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.field-label {
+  font-size: var(--text-caption);
+  font-weight: 500;
+  color: var(--fg-muted);
+}
+
+.field-help {
+  font-size: var(--text-micro);
+  color: var(--fg-faint);
+  font-family: var(--font-body);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ── Input group (addon-left + input + addon-right) ─────────────────────── */
+.input-group {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-sunken);
+  overflow: hidden;
+  transition:
+    border-color var(--motion-fast) var(--ease-calm),
+    box-shadow   var(--motion-fast) var(--ease-calm);
+}
+
+.input-group:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-soft);
+}
+
+/* strip the inner input's own border/background so the group owns the frame */
+.input-group .input {
+  border: 0;
+  background: transparent;
+  /* override the group-level ring — the outer group handles it */
+  box-shadow: none;
+}
+
+.input-group .input:focus,
+.input-group .input:focus-visible {
+  background: transparent;
+  box-shadow: none;
+}
+
+/* error on the group */
+.input-group.input-error {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 2px var(--danger-soft);
+}
+
+/* ── Addon (prefix / suffix cell inside .input-group) ────────────────────── */
+.input-addon {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-3);
+  color: var(--fg-faint);
+  font-size: var(--text-caption);
+  border-right: 1px solid var(--border-soft);
+  flex-shrink: 0;
+}
+
+.input-addon-right {
+  border-right: 0;
+  border-left: 1px solid var(--border-soft);
+}
+
+.input-addon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ── Keyboard shortcut chip ───────────────────────────────────────────────── */
+/* Used standalone OR nested inside .input-addon */
+kbd,
+.input-addon kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-faint);
+  background: var(--bg-base);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xs);
+  padding: 0 var(--space-1);
+  /* structural: 5px is the visual optical padding for a chip this small */
+  padding-inline: 5px;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+/* ── Reduced-motion safety ────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .input,
+  .input-group {
+    transition: none;
+  }
+}

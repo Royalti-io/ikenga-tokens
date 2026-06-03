@@ -1,0 +1,527 @@
+/* =============================================================================
+   Atelier app-kit · part 34 · UX-Mode Action Surfaces  (Pattern)
+   Source panes:
+     - plans/atelier/designs/atelier-tasks.html
+         .tk-execmode pill family  (lines 1241–1251)
+         .ag-block mode-tint family (lines 1749–1761)
+     - plans/atelier/designs/atelier-approve-gate.html
+         .ob-detail pane shell     (lines 1116, 1264)
+         .ob-chip family           (lines 1059–1103)
+         .ob-seq-callout           (lines 1137–1148)
+         .ob-edit-subject          (lines 1157–1170)
+         .ob-quick-edit family     (lines 1172–1205)
+         .ob-detail-toolbar        (lines 1117–1125)
+         .ob-detail-body           (line 1127)
+         .ob-detail-head family    (lines 1129–1135)
+         .ob-section / .ob-section-count (lines 1107–1113)
+
+   This pattern owns the LAYOUT and COMPOSITION CSS that binds the five
+   ux_mode visual surfaces together. It does NOT redefine classes owned by
+   sibling partials — it only references them by name in comments.
+
+   Classes owned here:
+     Exec-mode pill (.tk-execmode family):
+       .tk-execmode
+       .tk-execmode.is-autonomous
+       .tk-execmode.is-approval_required
+       .tk-execmode.is-report
+
+     Agenda lane mode-tint (.ag-block family):
+       .ag-block
+       .ag-block.is-me
+       .ag-block.is-agent
+       .ag-block.is-silent
+       .ag-block.is-deadline
+       .ag-block.is-done
+       .ag-block .t
+       .ag-block.is-done .t
+       .ag-block .m
+
+     Approve-gate detail pane shell:
+       .ob-detail                   (container-type: inline-size host)
+       .ob-section                  (list-column section label)
+       .ob-section-count
+       .ob-detail-toolbar           (sticky toolbar strip, list column)
+       .ob-detail-toolbar-spacer
+       .ob-detail-toolbar-meta
+       .ob-detail-body              (scrollable body, right pane)
+       .ob-detail-head              (recipient + chips block)
+       .ob-detail-to-row
+       .ob-detail-to-name
+       .ob-detail-to-addr
+       .ob-detail-subject           (display-face subject heading)
+       .ob-detail-meta              (chips row)
+
+     Approve-gate chip family:
+       .ob-chip
+       .ob-chip.is-mode
+       .ob-chip.is-approve
+       .ob-chip.sender
+       .ob-chip.sender.cold
+
+     Sequence-context callout:
+       .ob-seq-callout
+       .ob-seq-callout strong  .ob-seq-callout svg
+       .ob-seq-callout-actions
+
+     Inline draft editor:
+       .ob-edit-subject             (editable subject heading)
+       .ob-quick-edit
+       .ob-quick-edit-head          .ob-quick-edit-head svg
+       .ob-quick-edit textarea
+       .ob-quick-edit-foot
+       .ob-quick-edit-foot .saved
+
+   NOT redefined here (owned by their respective parts):
+     .ux .ux.approve .ux.silent .ux.confirm .ux.streaming .ux.form
+       → 23-command-palette.css
+     .ob-actions .ob-actions-cluster .ob-actions-spacer
+     .ob-actions-primary .ob-actions-meta
+     .w-quick .qrow .qmeta
+       → 24-action-bar-quick.css
+     .atelier-state .atelier-prog .atelier-spin
+       → 26-feedback-state.css
+     .btn .btn-sm .btn-outline
+       → 10-button.css
+
+   Token-only rule: all color/space/radius/type values use var(--*).
+   Permitted literal px: 1px hairlines, icon sizes, structural geometry
+   (5px padding below --space-1, 9px pill font, 3px left-border accent).
+   ============================================================================= */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   1. EXEC-MODE PILL  (.tk-execmode)
+   ───────────────────────────────────────────────────────────────────────────
+   Compact mode annotation affixed to task rows, agenda blocks, and timeline
+   entries. Dashed border signals "runtime attribute, not a status badge."
+   Three exec-mode variants map to the three non-interactive ux_mode signals:
+     autonomous        → --agent  (agent-driven, no gate)
+     approval_required → --achievement (needs owner sign-off)
+     report            → --systemic   (background silent / scheduled)
+   The palette's per-action .ux badge (23-command-palette.css) renders the
+   full five ux_mode values; .tk-execmode is the task-row inline variant.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.tk-execmode {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  border: 1px dashed var(--border-soft);
+  /* 1px 5px is structural pill geometry (below --space-1); border-radius from token */
+  padding: 1px 5px;
+  border-radius: var(--radius-xs);
+  background: transparent;
+}
+
+/* Autonomous — agent-driven, no human gate required */
+.tk-execmode.is-autonomous {
+  color: var(--agent);
+  border-color: color-mix(in srgb, var(--agent) 30%, var(--border-soft));
+}
+
+/* Approval required — paused, needs owner decision (approve-mode outcome) */
+.tk-execmode.is-approval_required {
+  color: var(--achievement);
+  border-color: color-mix(in srgb, var(--achievement) 35%, var(--border-soft));
+}
+
+/* Report / silent — completed background run; read-only evidence record */
+.tk-execmode.is-report {
+  color: var(--systemic);
+  border-color: color-mix(in srgb, var(--systemic) 30%, var(--border-soft));
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   2. AGENDA-LANE BLOCK  (.ag-block)
+   ───────────────────────────────────────────────────────────────────────────
+   Time-rail blocks rendered inside the Tasks Agenda view. Left-border accent
+   communicates ux_mode / owner at a glance; background fill is additive on
+   the accent only (no base background, to keep the rail readable).
+   Maps to the locked D-01 Agenda design (atelier-tasks.html).
+
+     is-me       → --primary    (operator-owned item)
+     is-agent    → --agent      (agent-run item; soft fill)
+     is-silent   → --systemic   (scheduled background job; dashed border)
+     is-deadline → --danger     (hard deadline; danger tint fill)
+     is-done     → opacity .6 + strikethrough (auto-closed / completed)
+
+   3px left-border is structural accent geometry, not a spacing token.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.ag-block {
+  background: var(--bg-raised);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--fg-faint);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.ag-block:last-child {
+  margin-bottom: 0;
+}
+
+/* Operator-owned task — primary tint left border */
+.ag-block.is-me {
+  border-left-color: var(--primary);
+}
+
+/* Agent-run task — agent accent + soft agent fill */
+.ag-block.is-agent {
+  border-left-color: var(--agent);
+  background: var(--agent-soft);
+}
+
+/* Silent / scheduled background job — systemic accent, dashed, no fill */
+.ag-block.is-silent {
+  border-left-color: var(--systemic);
+  border-left-style: dashed;
+  background: transparent;
+}
+
+/* Hard deadline item — danger accent + subtle danger fill */
+.ag-block.is-deadline {
+  border-left-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+}
+
+/* Completed / auto-closed — dimmed; title gains a strike */
+.ag-block.is-done {
+  opacity: .6;
+}
+
+/* Block title */
+.ag-block .t {
+  font-size: var(--text-body-sm);
+  color: var(--fg);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Completed title — struck through */
+.ag-block.is-done .t {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  color: var(--fg-muted);
+}
+
+/* Meta row — chip cluster below the title */
+.ag-block .m {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   3. APPROVE-GATE DETAIL PANE — SHELL
+   ───────────────────────────────────────────────────────────────────────────
+   The right-hand detail column of the approve-gate panel (D-04). The pane
+   hosts the draft editor, chip cluster, sequence callout, and the sticky
+   .ob-actions footer (owned by 24-action-bar-quick.css).
+
+   .ob-detail declares container-type: inline-size so the responsive
+   @container ob-detail rule in 24-action-bar-quick.css fires correctly.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Scrolling right pane — declares the container context used by .ob-actions */
+.ob-detail {
+  overflow-y: auto;
+  background: var(--bg-surface);
+  container-type: inline-size;
+  container-name: ob-detail;
+}
+
+/* ── Approve-gate list column section label ──────────────────────────────── */
+.ob-section {
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  background: var(--bg-sunken);
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.ob-section-count {
+  color: var(--fg-muted);
+  font-weight: 400;
+}
+
+/* ── Sticky detail toolbar (list column top bar) ─────────────────────────── */
+.ob-detail-toolbar {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-sunken);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.ob-detail-toolbar-spacer {
+  flex: 1;
+}
+
+.ob-detail-toolbar-meta {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--fg-faint);
+  letter-spacing: .04em;
+  margin-right: var(--space-2);
+}
+
+/* ── Scrollable body (right column content area) ─────────────────────────── */
+.ob-detail-body {
+  padding: var(--space-6) var(--space-8);
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+/* ── Recipient + chips header block ──────────────────────────────────────── */
+.ob-detail-head {
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.ob-detail-to-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.ob-detail-to-name {
+  font-weight: 600;
+  font-size: var(--text-body);
+  color: var(--fg);
+}
+
+.ob-detail-to-addr {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  color: var(--fg-muted);
+}
+
+/* Display-face subject heading (static, non-editable header) */
+.ob-detail-subject {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-h1);
+  line-height: 1.18;
+  letter-spacing: -.012em;
+  margin: var(--space-3) 0;
+  color: var(--fg);
+}
+
+/* Chips row below the subject */
+.ob-detail-meta {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   4. APPROVE-GATE CHIP FAMILY  (.ob-chip)
+   ───────────────────────────────────────────────────────────────────────────
+   Inline metadata chips: ux_mode badge, domain tag, sender attribution.
+   .is-mode variant highlights the ux_mode value using --live/-soft (approve).
+   .sender is mono faint, dashed border. .sender.cold lifts to achievement
+   tint to signal an unsolicited (cold outreach) sender.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* The .ob-chip BASE rule + .sender / .sender.cold variants are owned by
+   11-badge-tag-chip.css (the canonical pill). This part adds ONLY the
+   approve-gate ux_mode modifiers, so there is no base-rule collision. */
+
+/* ux_mode highlight — approve mode uses --live tint */
+.ob-chip.is-mode {
+  color: var(--live);
+  background: var(--live-soft);
+  border-color: var(--live-soft);
+}
+
+/* Approve variant (synonym for is-mode; used on the approve chip explicitly) */
+.ob-chip.is-approve {
+  color: var(--live);
+  background: var(--live-soft);
+  border-color: var(--live-soft);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   5. SEQUENCE-CONTEXT CALLOUT  (.ob-seq-callout)
+   ───────────────────────────────────────────────────────────────────────────
+   A tinted callout that appears when the draft under review is part of a
+   multi-step outbound sequence (e.g. seq3-universal-pt). Uses the active
+   workspace tint (--tint-fg-active / --tint-bg-active) so the callout
+   tracks the domain colour without a hardcoded sequence accent.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.ob-seq-callout {
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid color-mix(in srgb,
+    var(--tint-fg-active, var(--primary)) 30%,
+    var(--border));
+  background: color-mix(in srgb,
+    var(--tint-fg-active, var(--primary)) 8%,
+    transparent);
+  border-radius: var(--radius-md);
+  font-size: var(--text-caption);
+  color: var(--fg-muted);
+  line-height: 1.55;
+}
+
+.ob-seq-callout strong {
+  color: var(--tint-fg-active, var(--primary));
+  font-weight: 600;
+}
+
+/* 12 × 12 px inline icon (structural icon geometry — not a spacing token) */
+.ob-seq-callout svg {
+  width: 12px;
+  height: 12px;
+  vertical-align: -1.5px;
+  margin-right: var(--space-1);
+  color: var(--tint-fg-active, var(--primary));
+}
+
+/* Action row below the callout body (e.g. "View sequence" buttons) */
+.ob-seq-callout-actions {
+  margin-top: var(--space-2);
+  display: flex;
+  gap: var(--space-2);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   6. INLINE DRAFT EDITOR
+   ───────────────────────────────────────────────────────────────────────────
+   Two inline-edit surfaces that let the operator tweak the draft before
+   approving, without leaving the approve-gate pane.
+
+   a) .ob-edit-subject — the editable display-font subject line. Invisible
+      border reveals on hover/focus, providing a subtle affordance.
+   b) .ob-quick-edit   — sunken card for body-level quick edits (textarea).
+
+   Note: for a full rewrite the operator uses "Send to chat" / "Continue
+   Claude session" via .ob-actions-cluster (24-action-bar-quick.css).
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Editable subject — matches .ob-detail-subject scale but accepts input */
+.ob-edit-subject {
+  width: 100%;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-h1);
+  line-height: 1.18;
+  letter-spacing: -.012em;
+  color: var(--fg);
+  background: transparent;
+  border: 0;
+  /* Dashed bottom border reveals affordance on interaction */
+  border-bottom: 1px dashed transparent;
+  padding: var(--space-1) 0;
+  outline: none;
+  transition: border-color var(--motion-fast) var(--ease-calm);
+}
+
+.ob-edit-subject:hover {
+  border-bottom-color: var(--border-soft);
+}
+
+.ob-edit-subject:focus {
+  border-bottom-color: var(--tint-fg-active, var(--primary));
+}
+
+/* Sunken quick-edit card (body-level tweaks) */
+.ob-quick-edit {
+  margin-top: var(--space-5);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+
+.ob-quick-edit-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+
+/* 12 × 12 px lead icon (structural icon geometry) */
+.ob-quick-edit-head svg {
+  width: 12px;
+  height: 12px;
+  color: var(--tint-fg-active, var(--primary));
+}
+
+/* Textarea — transparent background, respects shell font */
+.ob-quick-edit textarea {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: var(--text-body);
+  line-height: 1.6;
+  outline: none;
+  resize: vertical;
+  min-height: var(--space-20); /* ≈ 80px — structural minimum height */
+}
+
+.ob-quick-edit textarea::placeholder {
+  color: var(--fg-faint);
+}
+
+/* Footer strip — save-state annotation + action buttons */
+.ob-quick-edit-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-soft);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-faint);
+  letter-spacing: .04em;
+}
+
+/* "Saved" confirmation badge — achievement tint, right-aligned via margin-left: auto */
+.ob-quick-edit-foot .saved {
+  margin-left: auto;
+  color: var(--achievement);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   7. MOTION — REDUCED-MOTION OVERRIDES
+   ─────────────────────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .ob-edit-subject {
+    transition: none;
+  }
+}

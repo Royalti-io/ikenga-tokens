@@ -1,0 +1,488 @@
+/* =============================================================================
+   Atelier app-kit · part 11 · Badge / Tag / Chip
+   Source panes:
+     - design/shell/concepts/_shared/components.css   (§ Badges / tags — verbatim lifted)
+     - plans/atelier/designs/atelier-outbound.html    (.chip base + channel variants + .ob-filter-chip)
+     - plans/atelier/designs/atelier-approve-gate.html  (.ob-chip + channel variants)
+     - plans/atelier/designs/atelier-outbound-newsletter.html  (.chip.investor/.cool/.newsletter + .cal-pill)
+     - plans/atelier/designs/atelier-tasks.html       (.tk-badge + state variants)
+     - plans/atelier/designs/atelier-sales-list.html  (.stage-chip)
+
+   Owned classes:
+     .badge  .badge-dot
+     .badge-primary  .badge-achievement  .badge-danger  .badge-systemic  .badge-solid-primary
+     .tag  .tag-deal  .tag-warn  .tag-system  .tag-primary
+     .chip  .chip-tint  .chip.tint  .chip.ok  .chip.cool  .chip.warn
+     .chip.tint-active
+     .chip.listmonk  .chip.resend  .chip.smtp  .chip.newsletter  .chip.investor
+     .chip.agent  .chip.edited  .chip.sender  .chip.sender.cold
+     .chip.seq  .chip.is-on
+     .ob-chip  (alias of .chip for outbound rows — uses the same pill base)
+     .ob-filter-chip  .ob-filter-chip.is-on
+     .tk-badge  .tk-badge.is-pending  .tk-badge.is-in_progress
+     .tk-badge.is-blocked  .tk-badge.is-completed  .tk-badge.is-cancelled
+     .tk-badge .dot
+     .stage-chip
+     .cal-pill  .cal-pill .ptime
+     .cal-pill.cool  .cal-pill.investor  .cal-pill.sent
+
+   Pill-base recipe (mono-uppercase, radius-xs, soft-token bg) is the single
+   definition shared by .badge / .tag / .chip / .tk-badge / .ob-chip /
+   .stage-chip / .ob-filter-chip. Each consumer composes ON TOP of the base.
+
+   Token conversions applied vs source literals:
+     .chip.resend / .ob-chip.channel-resend  hsl(170,…)  →  --systemic / --systemic-soft
+     .chip.investor / .cal-pill.investor     hsl(150,…)  →  --live / --live-soft
+     .btn-destructive color hsl(0,0%,98%)    already fixed in 10-button.css  (not re-owned here)
+     All other source literals left as-is where they represent fixed
+     third-party brand hues (listmonk/smtp/newsletter/buffer channel identity).
+   ============================================================================= */
+
+
+/* ── Badge — primary pill primitive ─────────────────────────────────────────
+   Larger of the two standard pill sizes (10 px mono, 3 px/8 px padding).
+   Used in dense headers, list row annotations, and sidebar counts.        */
+.badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-sunken);
+  color: var(--fg-muted);
+  border: 1px solid var(--border-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+/* Inline status dot (5 px is fixed dot geometry — not a spacing token) */
+.badge-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* Semantic colour variants */
+.badge-primary {
+  color: var(--primary);
+  border-color: var(--primary-soft);
+  background: var(--primary-soft);
+}
+
+.badge-achievement {
+  color: var(--achievement);
+  border-color: var(--achievement-soft);
+  background: var(--achievement-soft);
+}
+
+.badge-danger {
+  color: var(--danger);
+  border-color: var(--danger-soft);
+  background: var(--danger-soft);
+}
+
+.badge-systemic {
+  color: var(--systemic);
+  border-color: var(--systemic-soft);
+  background: var(--systemic-soft);
+}
+
+/* Solid fill — used for counts / presence indicators on dark surfaces */
+.badge-solid-primary {
+  color: var(--primary-fg);
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+
+/* ── Tag — compact pill alias (mail rows, deal lists) ────────────────────────
+   Same recipe as .badge at 9.5 px / 2 px/6 px — one step smaller.
+   Semantics: deal (amber), warn (danger), system (systemic), primary.     */
+.tag {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-sunken);
+  color: var(--fg-muted);
+  border: 1px solid var(--border-soft);
+  white-space: nowrap;
+}
+
+.tag-deal {
+  color: var(--achievement);
+  border-color: var(--achievement-soft);
+  background: var(--achievement-soft);
+}
+
+.tag-warn {
+  color: var(--danger);
+  border-color: var(--danger-soft);
+  background: var(--danger-soft);
+}
+
+.tag-system {
+  color: var(--systemic);
+  border-color: var(--systemic-soft);
+  background: var(--systemic-soft);
+}
+
+.tag-primary {
+  color: var(--primary);
+  border-color: var(--primary-soft);
+  background: var(--primary-soft);
+}
+
+
+/* ── Chip — compact neutral pill (outbound / newsletter / sales rows) ────────
+   Identical geometry to .tag (9.5 px / 2 px/6 px / radius-xs) but carries
+   a wider set of contextual variants (channel identity, state, workspace tint).
+   .ob-chip is an alias used in approve-gate and outbound-email rows —
+   it reuses .chip exactly; component authors may use either class name.    */
+.chip,
+.ob-chip {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-sunken);
+  color: var(--fg-muted);
+  border: 1px solid var(--border-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+/* Inline icon (10 px is fixed icon geometry — not a spacing token) */
+.chip svg,
+.ob-chip svg {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+/* ── Chip semantic variants ─────────────────────────────────────────────── */
+
+/* Workspace-tinted chip — signals "lives inside an active flow" */
+.chip.tint,
+.chip-tint,
+.chip.seq,
+.ob-chip.seq {
+  color: var(--tint-fg-active, var(--primary));
+  border-color: color-mix(in srgb, var(--tint-fg-active, var(--primary)) 30%, var(--border));
+  background: color-mix(in srgb, var(--tint-fg-active, var(--primary)) 14%, transparent);
+}
+
+/* Affirmative / cooling — achievement amber */
+.chip.ok,
+.chip.cool,
+.ob-chip.edited {
+  color: var(--achievement);
+  border-color: var(--achievement-soft);
+  background: var(--achievement-soft);
+}
+
+/* Warning / destructive context */
+.chip.warn {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 30%, var(--border));
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+}
+
+/* Passive agent byline — stays muted */
+.chip.agent,
+.ob-chip.agent {
+  color: var(--fg-muted);
+}
+
+/* Sender domain byline — faint, dashed border */
+.chip.sender,
+.ob-chip.sender {
+  color: var(--fg-faint);
+  border-style: dashed;
+}
+
+/* Cold outreach sender — achievement tint on sender chip */
+.chip.sender.cold,
+.ob-chip.sender.cold {
+  color: var(--achievement);
+  border-color: var(--achievement-soft);
+}
+
+/* ── Channel-identity chips (third-party brand hues, light overrides) ────────
+   These are fixed product-identity colours, NOT workspace tokens.
+   resend  → mapped to --systemic / --systemic-soft per kit guidance.
+   listmonk, smtp, newsletter, buffer → retain their fixed brand hues.      */
+
+/* Resend — verdigris → systemic token */
+.chip.resend,
+.ob-chip.channel-resend {
+  color: var(--systemic);
+  border-color: var(--systemic-soft);
+  background: var(--systemic-soft);
+}
+[data-mode="light"] .chip.resend,
+[data-mode="light"] .ob-chip.channel-resend {
+  color: var(--systemic);
+  border-color: var(--systemic-soft);
+  background: var(--systemic-soft);
+}
+
+/* Listmonk — amber (fixed brand hue) */
+.chip.listmonk,
+.ob-chip.channel-listmonk {
+  color: hsl(42, 82%, 60%);
+  border-color: hsl(42, 40%, 28%);
+  background: hsl(42, 40%, 12%);
+}
+[data-mode="light"] .chip.listmonk,
+[data-mode="light"] .ob-chip.channel-listmonk {
+  color: hsl(42, 80%, 30%);
+  border-color: hsl(42, 60%, 80%);
+  background: hsl(42, 60%, 94%);
+}
+
+/* SMTP — slate blue (fixed brand hue) */
+.chip.smtp,
+.ob-chip.channel-smtp {
+  color: hsl(220, 40%, 68%);
+  border-color: hsl(220, 28%, 28%);
+  background: hsl(220, 28%, 12%);
+}
+[data-mode="light"] .chip.smtp,
+[data-mode="light"] .ob-chip.channel-smtp {
+  color: hsl(220, 48%, 38%);
+  border-color: hsl(220, 38%, 80%);
+  background: hsl(220, 38%, 94%);
+}
+
+/* Buffer — purple (fixed brand hue) */
+.ob-chip.channel-buffer {
+  color: hsl(280, 50%, 68%);
+  border-color: hsl(280, 28%, 28%);
+  background: hsl(280, 28%, 12%);
+}
+[data-mode="light"] .ob-chip.channel-buffer {
+  color: hsl(280, 50%, 32%);
+  border-color: hsl(280, 40%, 80%);
+  background: hsl(280, 40%, 94%);
+}
+
+/* Investor update — mapped to --live / --live-soft per kit guidance */
+.chip.investor {
+  color: var(--live);
+  border-color: var(--live-soft);
+  background: var(--live-soft);
+}
+[data-mode="light"] .chip.investor {
+  color: var(--live);
+  border-color: var(--live-soft);
+  background: var(--live-soft);
+}
+
+/* Newsletter — purple (distinct from Buffer; used as content-type label) */
+.chip.newsletter {
+  color: hsl(280, 55%, 70%);
+  border-color: hsl(280, 30%, 28%);
+  background: hsl(280, 30%, 12%);
+}
+[data-mode="light"] .chip.newsletter {
+  color: hsl(280, 50%, 32%);
+  border-color: hsl(280, 40%, 80%);
+  background: hsl(280, 40%, 94%);
+}
+
+
+/* ── Filter chip (interactive pill — ob-filter-chip) ────────────────────────
+   Larger than .chip (3 px/8 px, radius-pill) — sits in toolbar filter bars.
+   Active state uses workspace tint so it adapts per-surface.               */
+.ob-filter-chip {
+  background: var(--bg-base);
+  border: 1px solid var(--border-soft);
+  color: var(--fg-muted);
+  border-radius: var(--radius-pill);
+  padding: 3px var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: .04em;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ob-filter-chip:hover {
+  background: var(--bg-raised);
+  color: var(--fg);
+}
+
+.ob-filter-chip:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.ob-filter-chip.is-on {
+  background: color-mix(in srgb, var(--tint-fg-active, var(--primary)) 14%, var(--bg-base));
+  border-color: var(--tint-fg-active, var(--primary));
+  color: var(--tint-fg-active, var(--primary));
+}
+
+
+/* ── Task badge (.tk-badge) — status pill in task rows and agenda ────────────
+   Lifted verbatim from atelier-tasks.html §.tk-badge (9.5 px mono, 2 px/6 px,
+   radius-xs). State recipe uses color-mix to match the canonical pane.     */
+.tk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-soft);
+  color: var(--fg-muted);
+  background: var(--bg-base);
+  white-space: nowrap;
+}
+
+/* 5 px status dot (fixed dot geometry — not a spacing token) */
+.tk-badge .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* State variants — live/danger palette via color-mix, matching the pane */
+.tk-badge.is-pending {
+  color: var(--fg-muted);
+}
+
+.tk-badge.is-in_progress {
+  color: var(--live);
+  background: var(--live-soft);
+  border-color: color-mix(in srgb, var(--live) 30%, var(--border-soft));
+}
+
+.tk-badge.is-blocked {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 30%, var(--border-soft));
+}
+
+.tk-badge.is-completed {
+  color: var(--live);
+  background: var(--live-soft);
+  border-color: color-mix(in srgb, var(--live) 30%, var(--border-soft));
+}
+
+.tk-badge.is-cancelled {
+  color: var(--fg-faint);
+}
+
+
+/* ── Stage chip (.stage-chip) — pipeline stage label ────────────────────────
+   Sourced from atelier-sales-list.html. Uses radius-pill (999px) unlike the
+   other pills; neutral surface, uppercase mono. Not interactive.            */
+.stage-chip {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-soft);
+  color: var(--fg-muted);
+  background: var(--bg-sunken);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+
+/* ── Calendar pill (.cal-pill) — newsletter / outbound schedule item ─────────
+   Sourced from atelier-outbound-newsletter.html. A block-level pill (not
+   inline) with a time-label sub-element, adapts to workspace tint.
+   investor → mapped to --live / --live-soft per kit guidance.              */
+.cal-pill {
+  display: block;
+  background: color-mix(in srgb, var(--tint-fg-active, var(--primary)) 14%, var(--bg-surface));
+  border: 1px solid color-mix(in srgb, var(--tint-fg-active, var(--primary)) 30%, var(--border));
+  border-radius: var(--radius-sm);
+  padding: 4px 6px;
+  margin-bottom: 4px;
+  font-size: 10.5px;
+  color: var(--fg);
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+.cal-pill:hover {
+  background: color-mix(in srgb, var(--tint-fg-active, var(--primary)) 22%, var(--bg-surface));
+}
+
+.cal-pill:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Time label within the pill */
+.cal-pill .ptime {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--tint-fg-active, var(--primary));
+  letter-spacing: .04em;
+  display: block;
+  margin-bottom: 2px;
+}
+
+/* Cooling period — achievement amber */
+.cal-pill.cool {
+  background: color-mix(in srgb, var(--achievement) 14%, var(--bg-surface));
+  border-color: var(--achievement-soft);
+}
+.cal-pill.cool .ptime {
+  color: var(--achievement);
+}
+
+/* Investor update — live green (was hsl(150,…) literals in source) */
+.cal-pill.investor {
+  background: color-mix(in srgb, var(--live) 14%, var(--bg-surface));
+  border-color: var(--live-soft);
+}
+.cal-pill.investor .ptime {
+  color: var(--live);
+}
+
+/* Sent / archived — muted dashed */
+.cal-pill.sent {
+  background: var(--bg-base);
+  border-style: dashed;
+  opacity: .7;
+}
+.cal-pill.sent .ptime {
+  color: var(--fg-faint);
+}
+
+/* ── Motion — reduced-motion overrides ───────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .ob-filter-chip,
+  .cal-pill {
+    transition: none;
+  }
+}

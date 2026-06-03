@@ -1,0 +1,239 @@
+/* =============================================================================
+   Atelier app-kit · part 27 · Toast
+   Source pane:
+     - plans/atelier/designs/atelier-obi-home.html
+       Reference text: "silent dispatches + toasts 'Your Chi considers…'"
+       (§ callout-body, §ux_mode table pill — no dedicated toast CSS block in
+       source; this is a [new] greenfield design per the visual language implied
+       by the `silent` ux_mode dispatch pattern described there.)
+
+   Owned classes:
+     .toast-stack
+     .toast
+     .toast-icon
+     .toast-body
+     .toast-message
+     .toast-action
+     .toast.is-info
+     .toast.is-success
+     .toast.is-danger
+     .toast.is-action
+     .toast.is-exiting
+
+   Composes (do not redefine):
+     .btn-sm  (.toast-action is a plain <a> styled to match .btn-sm — callers
+              may add .btn-sm on the link element instead; the .toast-action
+              class exists for the common inline-link pattern without a <button>)
+
+   All values reference @ikenga/tokens custom properties.
+   No hardcoded hex / hsl color literals.
+   Fixed-geometry px values (permitted): 14px icon dimension, 1px rule hairline.
+   ============================================================================= */
+
+
+/* ── Stack container ─────────────────────────────────────────────────────────
+   The stack anchors to the bottom-right corner of its nearest positioned
+   ancestor (typically <body> or the shell surface).  It has no background or
+   border of its own — it is a pure layout rail that stacks toast items.
+   Items stack upward: newer toasts appear at the bottom of the visual stack
+   (flex-direction: column + items appended to DOM end).                       */
+.toast-stack {
+  position: fixed;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-end;
+  pointer-events: none;        /* stack itself is not a hit target */
+}
+
+
+/* ── Toast item ──────────────────────────────────────────────────────────────
+   Raised surface: --bg-raised + --shadow-3 + --radius-md.
+   A max-width of 340px keeps the message on two lines or fewer at body-sm.
+   pointer-events: auto restores interactivity on the item itself.            */
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  max-width: 340px;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-3);
+  color: var(--fg);
+
+  /* Entrance: slide in from the right, fade up */
+  animation:
+    toast-in var(--motion-base) var(--ease-soft-bounce) forwards;
+
+  /* 4 s auto-dismiss: callers add .is-exiting after 4 s to trigger exit */
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--space-6)) translateY(var(--space-1));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+}
+
+/* Reduced-motion: skip the slide, keep a plain opacity fade */
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: toast-in-fade var(--motion-base) var(--ease-calm) forwards;
+  }
+  @keyframes toast-in-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+}
+
+
+/* ── Exit state ──────────────────────────────────────────────────────────────
+   Callers add .is-exiting (e.g. after 4 s) then remove the element on
+   animationend.  Uses the same duration as entrance so the motion feels
+   matched.                                                                    */
+.toast.is-exiting {
+  animation:
+    toast-out var(--motion-slow) var(--ease-calm) forwards;
+}
+
+@keyframes toast-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+    max-height: 120px;
+    margin-bottom: 0;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(var(--space-4));
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: calc(-1 * var(--space-2));  /* collapse the stack gap */
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast.is-exiting {
+    animation: toast-out-fade var(--motion-slow) var(--ease-calm) forwards;
+  }
+  @keyframes toast-out-fade {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+}
+
+
+/* ── Icon slot ───────────────────────────────────────────────────────────────
+   14×14 px — structural icon geometry, not a spacing token.
+   Default colour inherits from the variant's semantic class.                  */
+.toast-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;             /* optical baseline alignment with body text */
+  color: var(--fg-muted);
+}
+
+
+/* ── Body ─────────────────────────────────────────────────────────────────── */
+.toast-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+  min-width: 0;
+}
+
+
+/* ── Message text ─────────────────────────────────────────────────────────── */
+.toast-message {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--lead-body);
+  color: var(--fg);
+  margin: 0;
+}
+
+
+/* ── Optional action link ────────────────────────────────────────────────────
+   Inline-link affordance (e.g. "View task", "Open Chi").
+   Sits below the message text inside .toast-body.
+   Callers may use a plain <a> with .toast-action or compose with .btn-sm.    */
+.toast-action {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: 500;
+  color: var(--tint-fg-active, var(--primary));
+  text-decoration: none;
+  cursor: pointer;
+  align-self: flex-start;
+}
+.toast-action:hover {
+  text-decoration: underline;
+}
+.toast-action:focus-visible {
+  outline: 2px solid var(--tint-fg-active, var(--primary));
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+
+/* ── Semantic variants ───────────────────────────────────────────────────────
+   .is-info    — neutral informational (default Chi dispatch "considers…" message)
+   .is-success — operation completed ("Triage inbox sent")
+   .is-danger  — operation failed or produced an error
+   .is-action  — approve-gate cue (awaiting sign-off); uses --live / --live-soft
+
+   Each variant tints:
+     • the left border (1px vertical accent replacing a coloured icon bg)
+     • the .toast-icon colour
+   The container background stays --bg-raised so the toast surface adapts
+   cleanly to all five Ikenga themes.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* Info — systemic palette; used for silent-mode "Your Chi considers…" toasts */
+.toast.is-info {
+  border-left: 3px solid var(--systemic);
+}
+.toast.is-info .toast-icon {
+  color: var(--systemic);
+}
+
+/* Success — primary palette */
+.toast.is-success {
+  border-left: 3px solid var(--primary);
+}
+.toast.is-success .toast-icon {
+  color: var(--primary);
+}
+
+/* Danger — action failed */
+.toast.is-danger {
+  border-left: 3px solid var(--danger);
+}
+.toast.is-danger .toast-icon {
+  color: var(--danger);
+}
+
+/* Action — approve-gate pending sign-off cue (--live = the "go" semantic) */
+.toast.is-action {
+  border-left: 3px solid var(--live);
+  background: color-mix(in srgb, var(--live-soft) 40%, var(--bg-raised));
+}
+.toast.is-action .toast-icon {
+  color: var(--live);
+}
+.toast.is-action .toast-action {
+  color: var(--live);
+}

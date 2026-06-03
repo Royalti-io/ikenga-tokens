@@ -1,0 +1,196 @@
+/* =============================================================================
+   Atelier app-kit · part 29 · Chat Message
+   Source panes (scatter — verbatim-identical CSS block in all 6):
+     - plans/atelier/designs/atelier-setup-chat-infer.html    (§ Chat, lines 1019–1035)
+     - plans/atelier/designs/atelier-mail.html                (§ Chat, lines 1019–1035)
+     - plans/atelier/designs/atelier-setup-chat-interview.html (§ Chat, lines 1019–1035)
+     - plans/atelier/designs/atelier-research.html            (§ Chat, lines 1025–1040)
+     - plans/atelier/designs/atelier-sales-list.html          (§ Chat, lines 1025–1040)
+     - plans/atelier/designs/atelier-strategy-board.html      (§ Chat, lines 1025–1040)
+
+   Owned classes:
+     .chat-msg
+     .chat-msg.from-user       — sender modifier: user turn
+     .chat-msg.from-claude     — sender modifier: Chi / agent turn
+     .chat-msg-from            — mono attribution line (sender + timestamp)
+     .chat-msg-body            — prose body; hosts <strong> highlights and inline <code>
+     .chat-msg-card            — inline structured artifact card (composes .card surface)
+     .chat-msg-card-head       — mono label row inside the card (icon + slug text)
+     .chat-msg-card pre        — monospace code/data block inside the card
+     .chat-msg-card pre .k     — key token in pre (achievement color)
+     .chat-msg-card pre .v     — value token in pre (primary color)
+     .chat-msg-actions         — row of quick-action buttons below a message
+     .chat-msg-actions .btn    — btn size override for the compact action strip
+
+   NOT owned here (compose or extend):
+     .card              — base surface shell (21-card.css); .chat-msg-card shares the
+                          same border/radius/bg recipe but owns its own internal layout
+     .btn / .btn-sm     — button sizes (10-button.css)
+     .chat-stream       — scroll container (screen-layer; not a shared component)
+     .chat-input*       — text-entry area (screen-layer; not a shared component)
+
+   Merge notes:
+     - CSS block is byte-for-byte identical in all 6 panes → lifted verbatim.
+     - The "Confirm & localize" button in setup-chat-infer.html used an inline style
+       with a hardcoded hsl(150,40%,10%) foreground. Resolved here as a modifier class
+       .chat-msg-actions .btn.is-confirm, using --live / --live-soft and the
+       color-mixed dark fg pattern consistent with other status surfaces.
+     - The 12px and 10px font-size values on .chat-msg-body code and .chat-msg-from
+       are fixed typographic geometry values (no token spans that granularity); they are
+       structural constants like icon sizes and are therefore permitted raw px per kit rules.
+     - .chat-msg-card pre uses 11.5px — same rationale (monospace code block size).
+   ============================================================================= */
+
+/* ── Message container ────────────────────────────────────────────────────────
+   Vertical grid with a 1-unit gap between from-line, body, card, and actions.
+   The scroll-container (.chat-stream, 3-unit gap) is screen-layer, not owned here.
+   ──────────────────────────────────────────────────────────────────────────── */
+.chat-msg {
+  display: grid;
+  gap: var(--space-1);
+}
+
+/* ── Attribution line ─────────────────────────────────────────────────────────
+   Compact mono byline: "You · 13:58" or "Chi · now".
+   Default: fg-faint. Sender modifiers apply primary / systemic accent.
+   ──────────────────────────────────────────────────────────────────────────── */
+.chat-msg-from {
+  font-family: var(--font-mono);
+  font-size: 10px;                  /* fixed small-mono geometry — no token at this granularity */
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+
+/* User turn: primary color marks the operator's own messages */
+.chat-msg.from-user .chat-msg-from {
+  color: var(--primary);
+}
+
+/* Chi / agent turn: systemic color marks the AI assistant's messages */
+.chat-msg.from-claude .chat-msg-from {
+  color: var(--systemic);
+}
+
+/* ── Body text ────────────────────────────────────────────────────────────────
+   Small body type, comfortable line-height for chat cadence.
+   Strong highlights use achievement; inline code renders in a pill on bg-surface.
+   ──────────────────────────────────────────────────────────────────────────── */
+.chat-msg-body {
+  font-size: var(--text-body-sm);
+  color: var(--fg);
+  line-height: 1.55;
+}
+
+/* Highlighted keywords — e.g. skill names, confirmations */
+.chat-msg-body strong {
+  color: var(--achievement);
+  font-weight: 600;
+}
+
+/* Inline code pill — bg-surface tray, primary text, monospace */
+.chat-msg-body code {
+  font-family: var(--font-mono);
+  font-size: 12px;                  /* fixed mono pill size — structural geometry */
+  background: var(--bg-surface);
+  padding: 1px 5px;                 /* 1px vertical is hairline geometry; 5px is fixed pill inset */
+  border-radius: var(--radius-xs);
+  color: var(--primary);
+}
+
+/* ── Inline artifact card ─────────────────────────────────────────────────────
+   A structured block that Chi inlines into a message to show inferred config,
+   schema data, or any structured artifact. Shares the .card surface recipe
+   (bg-surface + border-soft + radius-md + padding-3) but owns its own internals.
+   ──────────────────────────────────────────────────────────────────────────── */
+.chat-msg-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-size: var(--text-body-sm);
+}
+
+/* Card header row — icon + mono slug label */
+.chat-msg-card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 10px;                  /* fixed mono label size — structural geometry */
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  margin-bottom: var(--space-2);
+}
+
+/* 12 × 12 px icon in the card head — structural icon geometry */
+.chat-msg-card-head svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Code / data block inside the card — sunken tray, monospace, scrollable */
+.chat-msg-card pre {
+  font-family: var(--font-mono);
+  font-size: 11.5px;                /* fixed compact mono size — structural geometry */
+  line-height: 1.55;
+  color: var(--fg);
+  background: var(--bg-sunken);
+  padding: var(--space-2);
+  border-radius: var(--radius-xs);
+  margin: var(--space-2) 0 0;
+  overflow-x: auto;
+}
+
+/* Key token in pre (file names, field names) — achievement tint for visual hierarchy */
+.chat-msg-card pre .k {
+  color: var(--achievement);
+}
+
+/* Value token in pre (values, descriptions) — primary tint */
+.chat-msg-card pre .v {
+  color: var(--primary);
+}
+
+/* ── Action strip ─────────────────────────────────────────────────────────────
+   A compact row of quick-action buttons below a message or card.
+   Buttons override the base .btn height to 24px (fixed compact geometry —
+   the strip is narrower than any density token; it is intentional per source).
+   ──────────────────────────────────────────────────────────────────────────── */
+.chat-msg-actions {
+  display: flex;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+/* Compact button override — 24 × auto, 11px label inside the strip */
+.chat-msg-actions .btn {
+  font-size: 11px;                  /* fixed compact label size — structural geometry */
+  height: 24px;                     /* fixed compact strip height — structural geometry */
+  padding: 0 var(--space-2);
+}
+
+/* Confirm-action modifier — primary affirmative CTA in the action strip.
+   Source: inline style on "Confirm & localize" button (setup-chat-infer.html, setup-chat-interview.html).
+   Uses --live / --live-soft (green) to signal "safe to commit".
+   Foreground uses a color-mix dark fg against the live fill for legibility
+   (no --live-fg token exists; pattern mirrors status chip recipe). */
+.chat-msg-actions .btn.is-confirm {
+  background: var(--live);
+  border-color: var(--live);
+  color: color-mix(in srgb, var(--live) 20%, var(--bg-base));
+  font-weight: 600;
+}
+
+.chat-msg-actions .btn.is-confirm:hover {
+  filter: brightness(1.06);
+}
+
+/* ── Reduced-motion ───────────────────────────────────────────────────────────
+   No keyframe animations are defined in this part.
+   Transitions on .btn children are gated in 10-button.css.
+   ──────────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  /* Nothing to override at this layer. */
+}

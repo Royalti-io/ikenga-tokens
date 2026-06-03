@@ -1,0 +1,395 @@
+/* Part: table-dense-row  (Components / Display)
+ * Sources: ikenga-pkgs/packages/apps/tasks/dist/tasks.css (.tk-row / .tk-sub-row)
+ *          plans/atelier/designs/atelier-tasks.html (.tk-row / .tr-mini / .tk-dep-row)
+ *          plans/atelier/designs/atelier-approve-gate.html (.ob-row)
+ *          plans/atelier/designs/atelier-sales-list.html (.pl-row)
+ *
+ * Owned classes:
+ *   .dense-row  .dense-row-body  .dense-row-right  .dense-row-meta
+ *   .dense-row-title  .dense-row-sub  .dense-row-pre  .dense-row-chips
+ *   .dense-row-time  .dense-row-tick  .dense-row-check
+ *   .dense-row-dot  (priority dot — tasks domain)
+ *   .dense-row-due  (due-date cell — tasks domain)
+ *   --dense-row variant modifiers: .dense-row--task  .dense-row--sub
+ *     .dense-row--dep  .dense-row--mini  .dense-row--outbox  .dense-row--pipeline
+ *
+ * Legacy → canonical map:
+ *   .tk-row          → .dense-row.dense-row--task
+ *   .tk-sub-row      → .dense-row.dense-row--sub
+ *   .tk-dep-row      → .dense-row.dense-row--dep
+ *   .tr-mini         → .dense-row.dense-row--mini
+ *   .ob-row          → .dense-row.dense-row--outbox
+ *   .pl-row          → .dense-row.dense-row--pipeline
+ *
+ * NOT owned here (compose these):
+ *   .tk-badge / .badge / .ob-chip / .chip  → badge-tag-chip part
+ *   .card / .frame                          → card part
+ *   .btn                                    → button part
+ * ---------------------------------------------------------------- */
+
+/* === Base dense-row primitive ================================== */
+
+.dense-row {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--row-pad-y) var(--space-3);
+  border-bottom: 1px solid var(--border-soft);
+  cursor: pointer;
+  position: relative;
+  background: transparent;
+  text-align: left;
+  width: 100%;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+  font: inherit;
+  color: inherit;
+  transition: background var(--motion-fast) var(--ease-calm);
+}
+
+/* hover */
+.dense-row:hover {
+  background: var(--bg-raised);
+}
+
+/* selected / active */
+.dense-row.is-selected,
+.dense-row.is-on {
+  background: var(--bg-raised);
+}
+
+/* active left-accent stripe */
+.dense-row.is-on::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: var(--space-2);
+  bottom: var(--space-2);
+  width: 2px;
+  border-radius: 2px;
+  background: var(--tint-fg-active, var(--primary));
+}
+
+/* keyboard focus */
+.dense-row:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+/* === Shared sub-elements ======================================= */
+
+/* body column: flex column, min-width:0 so title can truncate */
+.dense-row-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* right column: time / badge stack, right-aligned */
+.dense-row-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+/* meta strip: mono micro-labels (category, source, agent) */
+.dense-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--fg-faint);
+  letter-spacing: 0.04em;
+}
+
+/* from/to header within meta (outbox / mail layout) */
+.dense-row-meta.is-header {
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 2px;
+}
+
+/* title line */
+.dense-row-title {
+  font-size: var(--text-body-sm);
+  color: var(--fg);
+  font-weight: 500;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* secondary text / preview / snippet (1-line clamp by default) */
+.dense-row-sub {
+  font-size: var(--text-caption);
+  color: var(--fg-muted);
+  line-height: 1.45;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+/* 2-line preview variant (outbox body, mail preview) */
+.dense-row-pre {
+  font-size: var(--text-caption);
+  color: var(--fg-muted);
+  line-height: 1.45;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  margin-bottom: var(--space-2);
+}
+
+/* chip tray at foot of outbox row (channel · agent · seq-pos) */
+.dense-row-chips {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* time / age stamp — mono, right-aligned */
+.dense-row-time {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--fg-faint);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.dense-row-time.is-overdue { color: var(--danger); }
+.dense-row-time.is-today   { color: var(--achievement); }
+.dense-row-time.is-bad     { color: var(--danger); }    /* .tr-mini .age.is-bad */
+
+/* status accent tick (4 px hairline, left of body) */
+.dense-row-tick {
+  width: 4px;
+  border-radius: 2px;
+  background: transparent;
+}
+/* tick state colours */
+.dense-row.is-unread        .dense-row-tick,
+.dense-row.is-selected      .dense-row-tick,
+.dense-row.status-awaiting  .dense-row-tick { background: var(--tint-fg-active, var(--primary)); }
+.dense-row.status-edited    .dense-row-tick { background: var(--achievement); }
+.dense-row.status-overdue   .dense-row-tick { background: var(--danger); }
+
+/* checkbox affordance (appears on hover / when checked) */
+.dense-row-check {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  background: var(--bg-base);
+  margin-top: 2px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--ease-calm);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.dense-row-check svg {
+  width: 10px;
+  height: 10px;
+  color: var(--primary-fg);
+  opacity: 0;
+}
+.dense-row:hover       .dense-row-check,
+.dense-row.is-checked  .dense-row-check { opacity: 1; }
+.dense-row.is-checked  .dense-row-check {
+  background: var(--tint-fg-active, var(--primary));
+  border-color: var(--tint-fg-active, var(--primary));
+}
+.dense-row.is-checked  .dense-row-check svg { opacity: 1; }
+
+/* priority dot (tasks only — 8 px filled circle) */
+.dense-row-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 5px;
+  background: var(--fg-faint);
+  flex-shrink: 0;
+}
+.dense-row-dot.is-critical {
+  background: var(--danger);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 20%, transparent);
+}
+.dense-row-dot.is-high   { background: var(--achievement); }
+.dense-row-dot.is-medium { background: var(--systemic); }
+.dense-row-dot.is-low    { background: var(--fg-faint); }
+
+/* due date label (tasks domain) */
+.dense-row-due {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-muted);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.dense-row-due.is-overdue { color: var(--danger); font-weight: 500; }
+.dense-row-due.is-today   { color: var(--achievement); }
+
+/* === Variant: task list row (→ .tk-row) ======================== */
+/* grid: [dot 14px] [body 1fr] [right auto] */
+
+.dense-row--task {
+  grid-template-columns: 14px 1fr auto;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+}
+
+.dense-row--task.is-completed .dense-row-title {
+  color: var(--fg-muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+/* category micro-label inside .dense-row-meta */
+.dense-row--task .dense-row-meta .cat {
+  background: var(--bg-base);
+  border: 1px solid var(--border-soft);
+  color: var(--fg-muted);
+  padding: 1px 5px;
+  border-radius: var(--radius-xs);
+  text-transform: lowercase;
+}
+
+/* === Variant: subtask row (→ .tk-sub-row) ====================== */
+/* Elevated card style (surface bg + full border + radius) */
+
+.dense-row--sub {
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  /* override base: no bottom-only border */
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.dense-row--sub.is-completed .dense-row-title {
+  color: var(--fg-muted);
+  text-decoration: line-through;
+}
+
+/* === Variant: dependency row (→ .tk-dep-row) =================== */
+/* Like sub-row but with a directional arrow icon slot */
+
+.dense-row--dep {
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+}
+
+/* arrow icon slot */
+.dense-row--dep .arr {
+  width: 13px;
+  height: 13px;
+  color: var(--fg-faint);
+  flex-shrink: 0;
+}
+.dense-row--dep.is-up       .arr { color: var(--danger); }
+.dense-row--dep.is-down     .arr { color: var(--systemic); }
+.dense-row--dep.is-resolved .arr { color: var(--live); }
+.dense-row--dep.is-resolved .dense-row-title { color: var(--fg-muted); }
+
+/* dep name link */
+.dense-row--dep .dense-row-title a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-soft);
+}
+.dense-row--dep .dense-row-title a:hover { border-bottom-color: var(--fg-muted); }
+
+/* === Variant: mini row (→ .tr-mini) ============================ */
+/* Used in sweep / triage summary cards — no cursor, no hover needed */
+
+.dense-row--mini {
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  cursor: default;
+}
+.dense-row--mini:last-child { border-bottom: 0; }
+
+/* mini title is single-line, nowrap */
+.dense-row--mini .dense-row-title {
+  -webkit-line-clamp: 1;
+  font-weight: 400;
+}
+
+/* === Variant: outbox row (→ .ob-row) =========================== */
+/* grid: [checkbox 16px] [tick 4px] [body 1fr] */
+
+.dense-row--outbox {
+  grid-template-columns: 16px 4px 1fr;
+  gap: var(--space-2);
+  align-items: start;
+  padding: calc(var(--row-pad-y) + 2px) var(--space-3);
+}
+
+/* single-line subject in outbox */
+.dense-row--outbox .dense-row-title {
+  -webkit-line-clamp: 1;
+  margin-bottom: var(--space-1);
+}
+
+/* === Variant: pipeline / deal row (→ .pl-row) ================== */
+/* grid: [accent 4px] [body 1fr] [right auto] */
+
+.dense-row--pipeline {
+  grid-template-columns: 4px 1fr auto;
+  gap: var(--space-2);
+  padding: calc(var(--row-pad-y) + 3px) var(--space-4);
+}
+
+.dense-row--pipeline .dense-row-tick {
+  background: transparent;
+}
+.dense-row--pipeline.is-selected .dense-row-tick {
+  background: var(--primary);
+}
+
+/* pipeline amount: mono, tabular, larger weight */
+.dense-row--pipeline .amt {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--fg);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.dense-row--pipeline .when {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-faint);
+  white-space: nowrap;
+}
+.dense-row--pipeline .when.is-urgent { color: var(--danger); }
+
+/* === Reduced-motion override =================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .dense-row,
+  .dense-row-check {
+    transition: none;
+  }
+}

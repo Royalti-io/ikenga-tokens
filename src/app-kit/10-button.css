@@ -1,0 +1,182 @@
+/* =============================================================================
+   Atelier app-kit · part 10 · Button
+   Source panes:
+     - design/shell/concepts/_shared/components.css  (§ Button + § Icon button)
+     - ikenga-pkgs/packages/apps/tasks/dist/tasks.css (§ .tk-btn — merged)
+
+   Owned classes:
+     .btn  .btn-sm  .btn-lg
+     .btn-primary  .btn-secondary  .btn-outline  .btn-ghost  .btn-destructive
+     .btn-icon
+     .rail-icon  .rail-icon.is-on  .rail-icon.is-on.rail-right  .rail-icon-badge
+
+   All values reference @ikenga/tokens custom properties.
+   No hex/hsl literals — one fix applied vs source:
+     .btn-destructive color: hsl(0,0%,98%)  →  var(--danger-fg)
+
+   .tk-btn merge → .btn:
+     .tk-btn.v-default   == .btn-primary   (primary bg/fg, transparent border)
+     .tk-btn.v-outline   == .btn-outline   (transparent bg, --border border)
+     .tk-btn.v-ghost     == .btn-ghost     (transparent bg+border)
+     .tk-btn.sz-md       == .btn-sm modifier at 32px (matches --btn-h-sm)
+     .tk-btn.sz-sm       == sub-sm at 28px (no exact token; compose .btn-sm)
+     gap:6px on tk-btn base / gap:4px on sz-sm are within .btn gap:--space-2
+   ============================================================================= */
+
+/* ── Base button ──────────────────────────────────────────────────────────── */
+.btn {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: 500;
+  padding: 0 var(--space-3);
+  height: var(--btn-h);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--fg);
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  transition:
+    background  var(--motion-fast) var(--ease-calm),
+    border-color var(--motion-fast) var(--ease-calm),
+    color        var(--motion-fast) var(--ease-calm),
+    transform    var(--motion-fast) var(--ease-calm);
+}
+.btn:hover     { background: var(--bg-raised); }
+.btn:active    { transform: translateY(0.5px); }
+.btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.btn:disabled  { opacity: 0.5; cursor: not-allowed; }
+.btn svg       { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* ── Size modifiers ───────────────────────────────────────────────────────── */
+.btn-sm {
+  height: var(--btn-h-sm);
+  padding: 0 var(--space-2);
+  font-size: var(--text-caption);
+}
+
+.btn-lg {
+  height: var(--btn-h-lg);
+  padding: 0 var(--space-4);
+  font-size: var(--text-body);
+}
+.btn-lg svg { width: 16px; height: 16px; }
+
+/* ── Variant modifiers ────────────────────────────────────────────────────── */
+/* primary — maps to .tk-btn.v-default (primary bg, transparent border) */
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-fg);
+  font-weight: 600;
+}
+.btn-primary:hover { filter: brightness(1.06); }
+
+/* secondary — raised surface with standard border */
+.btn-secondary {
+  background: var(--bg-raised);
+  border-color: var(--border);
+}
+
+/* outline — transparent bg, keeps border — maps to .tk-btn.v-outline */
+.btn-outline {
+  background: transparent;
+}
+.btn-outline:hover { background: var(--bg-raised); }
+
+/* ghost — transparent bg + border — maps to .tk-btn.v-ghost */
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--fg-muted);
+}
+.btn-ghost:hover { background: var(--bg-raised); color: var(--fg); }
+
+/* destructive — danger fill; uses --danger-fg (was hsl(0,0%,98%) in source) */
+.btn-destructive {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: var(--danger-fg);
+  font-weight: 600;
+}
+.btn-destructive:hover { filter: brightness(1.06); }
+
+/* ── Icon button (toolbar / reading-pane inline) ──────────────────────────── */
+/* Square, borderless; 30 × 30 px is a fixed geometry constant, not a spacing
+   token — intentional use of raw px per kit rules. */
+.btn-icon {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  border: 0;
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-calm),
+    color       var(--motion-fast) var(--ease-calm);
+}
+.btn-icon:hover { background: var(--bg-raised); color: var(--fg); }
+.btn-icon svg   { width: 15px; height: 15px; }
+
+/* ── Rail icon button (activity bar / dock collapsed strip) ───────────────── */
+/* 36 × 36 px is fixed icon-target geometry — raw px permitted per kit rules. */
+.rail-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  border: 0;
+  background: transparent;
+  color: var(--fg-faint);
+  cursor: pointer;
+  position: relative;
+  transition:
+    background var(--motion-fast) var(--ease-calm),
+    color       var(--motion-fast) var(--ease-calm);
+}
+.rail-icon:hover { background: var(--bg-surface); color: var(--fg-muted); }
+.rail-icon svg   { width: 18px; height: 18px; }
+
+/* on state — tinted bracket left edge */
+.rail-icon.is-on {
+  background: var(--bg-raised);
+  color: var(--tint-fg-active, var(--primary));
+}
+.rail-icon.is-on::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--tint-fg-active, var(--primary));
+}
+
+/* right-edge variant — bracket on right side (dock pane) */
+.rail-icon.is-on.rail-right::before {
+  left: auto;
+  right: -10px;
+}
+
+/* focus ring shared with .btn */
+.rail-icon:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* ── Rail badge dot (overlaid top-right; 8 px is fixed dot geometry) ──────── */
+.rail-icon-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--achievement);
+  border: 2px solid var(--bg-base);
+}

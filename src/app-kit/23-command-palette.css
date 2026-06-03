@@ -1,0 +1,503 @@
+/* =============================================================================
+   Atelier app-kit · part 23 · Command Palette
+   Source panes:
+     - plans/atelier/designs/atelier-shell-palette.html   (.cmdk* family + .ux badge)
+     - plans/atelier/designs/atelier-obi-home.html        (.palette* + .pitem* launcher)
+
+   Owned classes:
+     .cmdk-overlay
+     .cmdk
+     .cmdk-search
+     .cmdk-list
+     .cmdk-group
+     .cmdk-row  .cmdk-row.is-active
+     .cmdk-row .ic  .cmdk-row .nm  .cmdk-row .dom
+     .cmdk-empty
+     .cmdk-foot  .cmdk-foot .sp
+     .ux  .ux.approve  .ux.silent  .ux.confirm  .ux.streaming  .ux.form
+     .palette  .palette-head  .palette-head .ptag
+     .palette-section
+     .palette-list
+     .pitem  .pitem .pic  .pitem .ptitle  .pitem .pmeta
+     .pitem.is-placed  .pitem.is-locked
+
+   Merge notes:
+     .cmdk (full ⌘K overlay) + .palette (obi-home inline launcher) share
+     one overlay family: both live in a positioned surface, carry a header
+     strip and a scrollable list of runnable items. The .ux badge inline on
+     .cmdk-row replaces per-row hardcoded colors with semantic tokens:
+       approve    → --live / --live-soft
+       silent     → --systemic / --systemic-soft
+       confirm    → --agent / --agent-soft      (source used --fg-muted / --fg-faint per spec)
+       streaming  → --achievement / --achievement-soft
+       form       → --primary / --primary-soft
+     .palette box-shadow: source used rgba(0,0,0,.5) directional panel shadow;
+     mapped to var(--shadow-3) which approximates depth without a hardcoded color.
+     Fixed-geometry px values (permitted per kit rules):
+       560px   — cmdk panel max-width (structural)
+       11vh    — cmdk overlay top padding (structural viewport unit)
+       22px    — .cmdk-row .ic target size (icon geometry)
+       13px    — icon svg size inside .ic and .pitem .pic (icon geometry)
+       16px    — .cmdk-search svg size (icon geometry)
+       24px    — .pitem .pic size (icon geometry)
+       44px    — .palette top offset (chrome geometry — matches --tab-h token)
+       320px   — .palette width (panel geometry)
+       10.5px, 9.5px, 10px — sub-scale mono label sizes (no token; structural)
+       6px     — .palette-list gap (structural spacing, between --space-1 and --space-2)
+       2px     — .backdrop-filter value (structural)
+   ============================================================================= */
+
+
+/* ── ⌘K overlay scrim ────────────────────────────────────────────────────────
+   Covers the full shell surface with a semi-transparent tinted scrim.
+   Centered grid so the cmdk panel sits at 11vh from the top.              */
+.cmdk-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: start center;
+  padding-top: 11vh;
+  background: color-mix(in srgb, var(--bg-sunken) 66%, transparent);
+  backdrop-filter: blur(2px);
+}
+
+
+/* ── ⌘K panel ───────────────────────────────────────────────────────────────
+   560 px wide, capped at 92 % viewport. Surface layer with lg radius.    */
+.cmdk {
+  width: 560px;
+  max-width: 92%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-4);
+  overflow: hidden;
+}
+
+
+/* ── Search bar ─────────────────────────────────────────────────────────────
+   Icon + text input + esc hint. Divides from list with --border-soft.    */
+.cmdk-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.cmdk-search svg {
+  width: 16px;
+  height: 16px;
+  color: var(--fg-faint);
+  flex-shrink: 0;
+}
+
+.cmdk-search input {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: var(--text-body-lg);
+}
+
+.cmdk-search input::placeholder {
+  color: var(--fg-faint);
+}
+
+/* esc / shortcut hint within the search bar — reuses kbd primitive style */
+.cmdk-search kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-faint);
+  background: var(--bg-base);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xs);
+  padding: 1px 5px;
+}
+
+
+/* ── Scrollable list container ──────────────────────────────────────────────
+   Max height prevents the panel from filling the viewport.               */
+.cmdk-list {
+  max-height: 392px;
+  overflow: auto;
+  padding: var(--space-2);
+}
+
+
+/* ── Section header ─────────────────────────────────────────────────────────
+   Mono uppercase label separating "Recent" from "All actions" groups.    */
+.cmdk-group {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  padding: var(--space-2) var(--space-2) var(--space-1);
+}
+
+
+/* ── Action row ─────────────────────────────────────────────────────────────
+   Grid: icon | name | domain label | ux_mode badge or keyboard shortcut.
+   Keyboard-navigable; .is-active mirrors hover for arrow-key highlight.   */
+.cmdk-row {
+  display: grid;
+  grid-template-columns: 22px 1fr auto auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--fg-muted);
+  transition: background var(--motion-fast) var(--ease-calm),
+              color var(--motion-fast) var(--ease-calm);
+}
+
+.cmdk-row:hover,
+.cmdk-row.is-active {
+  background: var(--bg-raised);
+  color: var(--fg);
+}
+
+/* 22 × 22 px icon well (fixed icon geometry — not a spacing token) */
+.cmdk-row .ic {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-xs);
+  background: var(--bg-sunken);
+  color: var(--fg-muted);
+  flex-shrink: 0;
+}
+
+.cmdk-row .ic svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* Action name — full color, body-sm scale */
+.cmdk-row .nm {
+  color: var(--fg);
+  font-size: var(--text-body-sm);
+}
+
+/* Domain label — faint mono annotation, right of name */
+.cmdk-row .dom {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-faint);
+  letter-spacing: .04em;
+}
+
+/* Keyboard shortcut hint shown instead of ux_mode on pinned rows */
+.cmdk-row kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-muted);
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 1px 6px;
+}
+
+
+/* ── ux_mode badge (.ux) ────────────────────────────────────────────────────
+   Semantic badge indicating how the action runs. One badge per row.
+   Unified token mapping (merged per kit guidance):
+     approve    → --live (safe to run; routes through approve-gate)
+     silent     → --systemic (background / auto)
+     confirm    → --agent (needs confirmation; uses agent color per spec)
+     streaming  → --achievement (long-running / streamed output)
+     form       → --primary (requires form input before run)
+   Default variant keeps --fg-muted on --bg-sunken (unknown / fallback).  */
+.ux {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-sunken);
+  color: var(--fg-muted);
+}
+
+.ux.approve {
+  color: var(--live);
+  border-color: var(--live-soft);
+  background: var(--live-soft);
+}
+
+.ux.silent {
+  color: var(--systemic);
+  border-color: var(--systemic-soft);
+  background: var(--systemic-soft);
+}
+
+/* confirm — per kit merge spec → --agent / --agent-soft */
+.ux.confirm {
+  color: var(--agent);
+  border-color: var(--agent-soft);
+  background: var(--agent-soft);
+}
+
+.ux.streaming {
+  color: var(--achievement);
+  border-color: var(--achievement-soft);
+  background: var(--achievement-soft);
+}
+
+.ux.form {
+  color: var(--primary);
+  border-color: var(--primary-soft);
+  background: var(--primary-soft);
+}
+
+
+/* ── Empty state ────────────────────────────────────────────────────────────
+   Shown when search query returns no matching actions.                    */
+.cmdk-empty {
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  color: var(--fg-faint);
+}
+
+.cmdk-empty h4 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-body-lg);
+  color: var(--fg-muted);
+  margin: 0 0 var(--space-2);
+}
+
+.cmdk-empty p {
+  margin: 0;
+  font-size: var(--text-body-sm);
+}
+
+/* kbd hints inside empty state match standard .cmdk-search kbd style */
+.cmdk-empty kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-muted);
+  background: var(--bg-base);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xs);
+  padding: 0 5px;
+}
+
+
+/* ── Footer hint bar ────────────────────────────────────────────────────────
+   Mono keyboard legend: ↑↓ / ↵ / ⌘K / approve notice.
+   Divides from list with --border-soft; sunken bg distinguishes it.      */
+.cmdk-foot {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  border-top: 1px solid var(--border-soft);
+  background: var(--bg-sunken);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-faint);
+  letter-spacing: .04em;
+}
+
+.cmdk-foot kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-faint);
+  background: var(--bg-base);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xs);
+  padding: 1px 5px;
+}
+
+/* Spacer — pushes the approve notice to the far right */
+.cmdk-foot .sp {
+  flex: 1;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Obi-home inline launcher (.palette* family)
+   Source: atelier-obi-home.html · activated when .home[data-mode-edit="true"]
+   A fixed-width drawer that slides in from the right edge of the home canvas,
+   listing draggable widgets / skills. Same overlay family as .cmdk but uses
+   a different entry metaphor (drag-to-place vs run-on-enter).
+   ─────────────────────────────────────────────────────────────────────── */
+
+/* ── Drawer shell ───────────────────────────────────────────────────────────
+   320 px right drawer, anchored top (44 px = --tab-h) to bottom.
+   Box-shadow: source used a raw rgba directional shadow; mapped to --shadow-3
+   which carries the same depth without a hardcoded color literal.
+   The .home[data-mode-edit="true"] toggling is host-context; callers apply
+   display:flex when the edit mode is active.                              */
+.palette {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  bottom: 0;
+  width: 320px;
+  background: var(--bg-sunken);
+  border-left: 1px solid var(--border-soft);
+  display: none;
+  flex-direction: column;
+  z-index: 7;
+  box-shadow: var(--shadow-3);
+}
+
+
+/* ── Drawer header ───────────────────────────────────────────────────────────
+   Label tag + title + description; divides from section list.            */
+.palette-head {
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+/* Eyebrow tag — achievement tint, mono uppercase (e.g. "Widget palette") */
+.palette-head .ptag {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--achievement);
+  margin-bottom: var(--space-1);
+}
+
+/* Drawer title — display face, 16 px (maps to --text-body-lg) */
+.palette-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-body-lg);
+  color: var(--fg);
+}
+
+/* Subtitle / description copy */
+.palette-head p {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-caption);
+  color: var(--fg-muted);
+  line-height: 1.5;
+}
+
+
+/* ── Section block ───────────────────────────────────────────────────────────
+   Groups items (e.g. "Widgets", "Skills"). Adjacent sections use a hairline
+   separator. Section heading uses mono uppercase, faint.                  */
+.palette-section {
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+.palette-section h4 {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  font-weight: 500;
+}
+
+.palette-section + .palette-section {
+  border-top: 1px solid var(--border-soft);
+}
+
+
+/* ── Item list grid ─────────────────────────────────────────────────────────
+   6 px gap (structural — between --space-1 / 4 px and --space-2 / 8 px,
+   no token exists for this intermediate value).                           */
+.palette-list {
+  display: grid;
+  gap: 6px;
+}
+
+
+/* ── Draggable item (.pitem) ─────────────────────────────────────────────────
+   Flex row: icon well | title | meta hint.
+   Hover: achievement border + translateX(-2px) to signal drag affordance.
+   .is-placed: dimmed + non-interactive (already on canvas).
+   .is-locked: meta shown in faint (cannot be removed).                   */
+.pitem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  cursor: grab;
+  transition: border-color var(--motion-fast) var(--ease-calm),
+              transform var(--motion-fast) var(--ease-calm);
+}
+
+.pitem:hover {
+  border-color: var(--achievement);
+  transform: translateX(-2px);
+}
+
+/* 24 × 24 px icon well (fixed icon geometry — not a spacing token) */
+.pitem .pic {
+  width: 24px;
+  height: 24px;
+  background: var(--bg-raised);
+  border-radius: var(--radius-xs);
+  display: grid;
+  place-items: center;
+  color: var(--fg-muted);
+  flex-shrink: 0;
+}
+
+.pitem .pic svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* Item label — body-sm (13 px maps to --text-body-sm) */
+.pitem .ptitle {
+  font-size: var(--text-body-sm);
+  color: var(--fg);
+}
+
+/* Domain / hint annotation — right-aligned mono faint */
+.pitem .pmeta {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .04em;
+  color: var(--fg-faint);
+}
+
+/* Already placed on canvas — dimmed, non-draggable */
+.pitem.is-placed {
+  opacity: .45;
+  cursor: default;
+}
+
+.pitem.is-placed:hover {
+  border-color: var(--border-soft);
+  transform: none;
+}
+
+/* Locked item — meta remains faint, no structural difference */
+.pitem.is-locked .pmeta {
+  color: var(--fg-faint);
+}
+
+
+/* ── Motion — reduced-motion overrides ───────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .cmdk-row,
+  .pitem {
+    transition: none;
+  }
+
+  .cmdk-overlay {
+    backdrop-filter: none;
+  }
+}
