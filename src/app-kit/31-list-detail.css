@@ -482,6 +482,24 @@
   letter-spacing: 0.04em;
 }
 
+/* === Focus-visible overrides ================================== */
+/*
+ * .split-row and .split-group are interactive (cursor: pointer, JS handlers).
+ * Without an explicit :focus-visible rule the browser default outline is
+ * suppressed by the grid/flex layout resets in some shell contexts.
+ * These rules satisfy WCAG 2.4.7 (focus indicator visible).
+ */
+
+.split-row:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.split-group:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
 /* === Reduced-motion override =================================== */
 
 @media (prefers-reduced-motion: reduce) {

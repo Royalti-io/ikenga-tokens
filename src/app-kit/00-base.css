@@ -21,3 +21,17 @@ body {
 	background: var(--bg-base);
 	-webkit-font-smoothing: antialiased;
 }
+
+/* Global reduced-motion safety net (WCAG 2.3.3 · the motion foundation's
+ * enforcement contract). Per-component partials also gate their own
+ * transitions; this is the belt-and-suspenders that covers anything missed. */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}

@@ -376,3 +376,44 @@
   pointer-events: none;
   transition: opacity var(--motion-base) var(--ease-calm);
 }
+
+
+/* ================================================================
+   FOCUS-VISIBLE OVERRIDES
+   All interactive elements in this pattern must have a visible
+   focus indicator to satisfy WCAG 2.4.7 (focus always visible).
+   The shell resets outline on some button elements; these rules
+   restore a 2px primary-colour ring on keyboard focus.
+   ================================================================ */
+
+.pane-subnav button:focus-visible,
+.pane-inner-tabs button:focus-visible,
+.pane-filter-chip:focus-visible,
+.pane-view-toggle button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.pane-filterbar-search > input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+
+/* ================================================================
+   REDUCED-MOTION OVERRIDES
+   Transitions in .pane-subnav button, .pane-inner-tabs button,
+   .pane-filter-chip, and .pane-view-toggle button are short
+   (var(--motion-fast) ≈ 120 ms) but must be suppressed for users
+   who require reduced motion.
+   ================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .pane-subnav button,
+  .pane-inner-tabs button,
+  .pane-filter-chip,
+  .pane-view-toggle button,
+  .nav-group[data-kind="filter"].is-dim {
+    transition: none;
+  }
+}

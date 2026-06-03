@@ -517,7 +517,28 @@
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   7. MOTION — REDUCED-MOTION OVERRIDES
+   7. FOCUS-VISIBLE — INLINE EDITOR ELEMENTS
+   ──────────────────────────────────────────────────────────────────────────
+   .ob-edit-subject and .ob-quick-edit textarea both declare outline: none,
+   which suppresses the browser default focus ring. Provide explicit
+   :focus-visible rings so keyboard users can identify the active editor.
+   The subject line uses a border-bottom affordance on :focus; a ring is
+   added on top for keyboard-only navigators (WCAG 2.4.7).
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.ob-edit-subject:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.ob-quick-edit textarea:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   8. MOTION — REDUCED-MOTION OVERRIDES
    ─────────────────────────────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {

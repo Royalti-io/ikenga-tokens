@@ -329,6 +329,16 @@
   );
 }
 
+/* === Keyboard focus rings ======================================= */
+/* .kb-add is a click/keyboard target (role="button" per doc);
+   WCAG 2.4.7 requires a visible focus ring. Added here as the
+   canonical ring; callers must also supply role="button" + tabindex="0". */
+
+.kb-add:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 /* === Reduced-motion override =================================== */
 /* The .kb-card hover lift and border transition are aesthetic only.
    Suppress them when the user has opted out of motion. */

@@ -175,6 +175,16 @@
 }
 
 
+/* ── Keyboard focus rings ────────────────────────────────────────────────── */
+/* .w-quick .qrow is a click target (role="button" per doc); WCAG 2.4.7 requires
+   a visible focus ring when reached by keyboard. No hover affordance is defined
+   by design (locked D-06), but a focus ring is separate from hover and required. */
+.w-quick .qrow:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+
 /* ── Motion — reduced-motion overrides ───────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .ob-actions-primary {

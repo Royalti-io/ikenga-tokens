@@ -159,3 +159,15 @@
 .tab.is-on .tab-count {
   color: var(--tint-fg-active, var(--primary));
 }
+
+/* ── Reduced-motion safety ──────────────────────────────────────────
+ * .seg button/a carry background + color transitions at --motion-fast.
+ * The tab strip itself has no enter/exit animation, but gate both
+ * shapes here so any future slide-indicator animation is pre-gated.
+ * ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .seg button,
+  .seg a {
+    transition: none;
+  }
+}

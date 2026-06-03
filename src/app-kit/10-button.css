@@ -121,7 +121,8 @@
     background var(--motion-fast) var(--ease-calm),
     color       var(--motion-fast) var(--ease-calm);
 }
-.btn-icon:hover { background: var(--bg-raised); color: var(--fg); }
+.btn-icon:hover        { background: var(--bg-raised); color: var(--fg); }
+.btn-icon:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .btn-icon svg   { width: 15px; height: 15px; }
 
 /* ── Rail icon button (activity bar / dock collapsed strip) ───────────────── */
@@ -168,6 +169,18 @@
 
 /* focus ring shared with .btn */
 .rail-icon:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* ── Reduced-motion safety ────────────────────────────────────────────────── */
+/* All button transitions run at --motion-fast (120ms) — fast but still
+   animated. Gate transitions on all interactive button shapes so callers
+   that add keyframe spinners (loading state) don't need to duplicate this. */
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .btn-icon,
+  .rail-icon {
+    transition: none;
+  }
+}
 
 /* ── Rail badge dot (overlaid top-right; 8 px is fixed dot geometry) ──────── */
 .rail-icon-badge {

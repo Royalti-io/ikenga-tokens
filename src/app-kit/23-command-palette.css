@@ -490,6 +490,23 @@
 }
 
 
+/* ── Keyboard focus rings ────────────────────────────────────────────────── */
+/* .cmdk-row is a keyboard-navigable action row (cursor:pointer).
+   .is-active provides arrow-key highlight; WCAG 2.4.7 requires a distinct
+   :focus-visible ring that fires independently for AT users. */
+.cmdk-row:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* .pitem is a draggable interactive element; keyboard users must be able to
+   locate the drag target by Tab. */
+.pitem:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+
 /* ── Motion — reduced-motion overrides ───────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .cmdk-row,
