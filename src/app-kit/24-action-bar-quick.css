@@ -68,12 +68,12 @@
 }
 
 /* Primary CTA — "Approve & Send" or equivalent commitment action.
-   Uses --live (green) background; text color is dark-on-green.
-   Source literal hsl(150,40%,10%) → color-mix approximation (no --live-fg token yet). */
+   Uses --live (green) background; text color is dark-on-green via --live-fg
+   (minted in tokens.css, Wave 4 — per-theme analogue of --danger-fg). */
 .ob-actions-primary {
   background: var(--live);
   border-color: var(--live);
-  color: color-mix(in srgb, var(--live) 12%, var(--bg-sunken));
+  color: var(--live-fg);
   font-weight: 600;
   height: var(--btn-h);
   padding: 0 var(--space-4);

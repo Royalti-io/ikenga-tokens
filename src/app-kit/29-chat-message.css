@@ -174,12 +174,12 @@
 /* Confirm-action modifier — primary affirmative CTA in the action strip.
    Source: inline style on "Confirm & localize" button (setup-chat-infer.html, setup-chat-interview.html).
    Uses --live / --live-soft (green) to signal "safe to commit".
-   Foreground uses a color-mix dark fg against the live fill for legibility
-   (no --live-fg token exists; pattern mirrors status chip recipe). */
+   Foreground uses var(--live-fg) (minted in tokens.css, Wave 4) against the
+   live fill for legibility. */
 .chat-msg-actions .btn.is-confirm {
   background: var(--live);
   border-color: var(--live);
-  color: color-mix(in srgb, var(--live) 20%, var(--bg-base));
+  color: var(--live-fg);
   font-weight: 600;
 }
 

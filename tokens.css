@@ -164,6 +164,7 @@
   --agent-soft: color-mix(in srgb, var(--agent) 14%, transparent);
   --live: var(--success);
   --live-soft: color-mix(in srgb, var(--success) 14%, transparent);
+  --live-fg: hsl(150, 45%, 10%);
 
   /* Tints (subtle backgrounds for active/hovered states) */
   --tint-bg-active: hsl(220, 90%, 60%, 0.08);
@@ -277,6 +278,7 @@
   --agent-soft: color-mix(in srgb, var(--agent) 14%, transparent);
   --live: var(--success);
   --live-soft: color-mix(in srgb, var(--success) 14%, transparent);
+  --live-fg: hsl(150, 24%, 97%);
 
   --tint-bg-active: hsl(220, 90%, 52%, 0.10);
   --tint-fg-active: hsl(220, 90%, 42%);
@@ -330,7 +332,7 @@
   --danger: hsl(8,68%,46%); --danger-fg: hsl(0,0%,98%); --danger-soft: hsl(8,50%,16%);
   --systemic: hsl(170,28%,34%); --systemic-soft: hsl(170,22%,16%);
   --agent: hsl(265,52%,64%); --agent-soft: hsl(265,32%,20%);
-  --live:  hsl(150,48%,52%); --live-soft:  hsl(150,30%,18%);
+  --live:  hsl(150,48%,52%); --live-soft:  hsl(150,30%,18%); --live-fg: hsl(150,50%,9%);
   --shadow-1: 0 1px 2px rgba(0,0,0,.55), 0 0 0 1px rgba(0,0,0,.25);
   --shadow-2: 0 4px 12px -2px rgba(0,0,0,.55);
   --shadow-3: 0 12px 28px -8px rgba(0,0,0,.6);
@@ -346,7 +348,7 @@
   --danger: hsl(8,68%,42%); --danger-fg: hsl(0,0%,98%); --danger-soft: hsl(8,60%,92%);
   --systemic: hsl(170,36%,32%); --systemic-soft: hsl(170,30%,90%);
   --agent: hsl(265,55%,44%); --agent-soft: hsl(265,40%,92%);
-  --live:  hsl(150,55%,34%); --live-soft:  hsl(150,40%,92%);
+  --live:  hsl(150,55%,32%); --live-soft:  hsl(150,40%,92%); --live-fg: hsl(0,0%,100%);
   --shadow-1: 0 1px 2px rgba(28,18,8,.08);
   --shadow-2: 0 4px 12px -2px rgba(28,18,8,.10);
   --shadow-3: 0 12px 28px -8px rgba(28,18,8,.14);
