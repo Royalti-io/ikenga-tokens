@@ -1,0 +1,106 @@
+/* Part: card  (Components / Display)
+ * Sources: plans/atelier/designs/atelier-finance.html  (.fin-kpi, .frame surface recipe)
+ *          plans/atelier/designs/atelier-obi-home.html  (.callout)
+ *          plans/atelier/designs/atelier-tasks.html     (.tr-stat)
+ *
+ * Owned classes:
+ *   .card
+ *   .card-pad          — adds standard inner padding (default: --space-4)
+ *   .card-pad-sm       — compact inner padding (--space-3)
+ *   .card-pad-lg       — generous inner padding (--space-5)
+ *   .card-head         — header strip with bottom rule (for titled cards)
+ *   .stat-card         — numeric KPI variant: large value + mono label + tint border
+ *   .stat-card.is-danger  .stat-card.is-warn  .stat-card.is-sys
+ *                      — semantic border tints (accent color-mixed into border-soft)
+ *
+ * NOT owned here (compose into .card):
+ *   .frame / .frame-head / .frame-tabs / .frame-body  — pkg-pane-frame pattern
+ *   .dense-row*                                        — table-dense-row part
+ *   .badge / .tag / .chip                              — badge-tag-chip part
+ *   .btn                                               — button part
+ *
+ * Merge narrative:
+ *   All of .callout (atelier-obi-home), .fin-kpi (atelier-finance), and .tr-stat
+ *   (atelier-tasks) share an identical surface recipe: border 1px var(--border-soft),
+ *   border-radius var(--radius-md), background var(--bg-surface|--bg-base), overflow hidden.
+ *   Those are consolidated here into .card. Domain-specific internals (.callout-num,
+ *   .fin-kpi-label, .fin-kpi-value, .fin-kpi-spark, .tr-stat .n/.k/.sub) stay in their
+ *   respective screen partials — this part owns only the container shell and the
+ *   stat-card variant that covers the shared numeric-KPI pattern (.tr-stat and
+ *   the non-gauge .fin-kpi share the same visual recipe).
+ * ---------------------------------------------------------------- */
+
+/* === Base card primitive ======================================= */
+
+.card {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+
+/* --- Padding modifiers ----------------------------------------- */
+/* Use .card-pad instead of padding inline so the container
+   and its padding can be swapped independently (e.g. flush
+   tables inside a padded header, or the pane-frame flush body). */
+
+.card-pad    { padding: var(--space-4); }
+.card-pad-sm { padding: var(--space-3); }
+.card-pad-lg { padding: var(--space-5); }
+
+/* --- Header strip ---------------------------------------------- */
+/* Appears at the top of a titled card (display: flex, spaced,
+   with a soft bottom rule dividing head from body). Callers place
+   a title + optional right-side action inside. */
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+/* === Stat card variant ========================================= */
+/* Numeric KPI surface — used in Tasks triage (.tr-stat) and
+   Finance overview (.fin-kpi without the gauge). Features:
+   - bg-base (slightly recessed vs card default bg-surface)
+   - standard padding (space-3 × space-4)
+   - optional semantic border tint (danger / achievement / systemic)
+
+   Domain inner elements (.n/.k/.sub in tasks; .fin-kpi-label /
+   .fin-kpi-value / .fin-kpi-sub in finance) live in their
+   screen partials; only the surface shell is owned here. */
+
+.stat-card {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-base);
+  padding: var(--space-3) var(--space-4);
+  overflow: hidden;
+}
+
+/* Semantic border tints: color-mixes the semantic color into
+   border-soft so the tint reads on both light and dark themes
+   without a hardcoded hex. Recipe matches atelier-tasks.html
+   .tr-stat.is-danger / is-warn / is-sys source verbatim. */
+
+.stat-card.is-danger {
+  border-color: color-mix(in srgb, var(--danger)    35%, var(--border-soft));
+}
+.stat-card.is-warn {
+  border-color: color-mix(in srgb, var(--achievement) 35%, var(--border-soft));
+}
+.stat-card.is-sys {
+  border-color: color-mix(in srgb, var(--systemic)  35%, var(--border-soft));
+}
+
+/* === Reduced-motion override =================================== */
+/* No animated properties are defined on .card itself. If a caller
+   adds a transition to a child (e.g. border-color on hover), they
+   must gate it here themselves. Placeholder kept for discoverability. */
+
+@media (prefers-reduced-motion: reduce) {
+  /* nothing to override at this layer */
+}

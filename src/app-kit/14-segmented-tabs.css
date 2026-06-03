@@ -1,0 +1,173 @@
+/*
+ * Part 14 — Segmented control + Underline tabs
+ * Tier: Components / Navigation
+ * Source panes:
+ *   .seg / .seg-dot — design/shell/concepts/_shared/components.css (Sticky-control section)
+ *   .tabs / .tab / .tab-count — design/shell/concepts/_shared/components.css (Tabs section)
+ *                               + plans/atelier/designs/atelier-tasks.html (#tk-views-css .ip-tabs/.ip-tab)
+ *
+ * Owned classes: .seg  .seg-dot  .tabs  .tab  .tab-count
+ * Merge note: .ip-tabs/.ip-tab (inspector variant, atelier-tasks.html) folded into
+ *   .tabs/.tab — height promoted to var(--tab-h), display to inline-flex + gap for
+ *   optional icon children, focus-visible ring from the a11y block preserved.
+ */
+
+/* ── Segmented control ──────────────────────────────────────────── */
+
+.seg {
+  display: inline-flex;
+  background: var(--bg-base);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: 2px;
+  gap: 2px;
+}
+
+.seg button,
+.seg a {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  border: 0;
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  transition:
+    background var(--motion-fast) var(--ease-calm),
+    color var(--motion-fast) var(--ease-calm);
+}
+
+.seg button:hover,
+.seg a:hover {
+  color: var(--fg);
+}
+
+.seg button.is-on,
+.seg a.is-on {
+  background: var(--bg-raised);
+  color: var(--fg);
+  box-shadow: var(--shadow-1);
+}
+
+.seg button:focus-visible,
+.seg a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/*
+ * .seg-dot — fixed 8px geometry (no space token maps to 8px);
+ * border-radius 50% is structural, not a theme radius.
+ * Colour is set by the consumer via color/background (e.g. --live, --danger).
+ */
+.seg-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Underline tabs ─────────────────────────────────────────────── */
+/*
+ * Merged from:
+ *   .tabs  — components.css line 304 (gap: 4px, padding 0 --space-4, bg-sunken)
+ *   .ip-tabs — atelier-tasks.html #tk-views-css (gap: 0, padding 0 --space-3, height --tab-h)
+ *
+ * Resolution: keep gap 0 (tighter; ip-tabs was the later, more refined variant);
+ * padding: 0 var(--space-3) (matches inspector; outer caller adds wider padding if needed);
+ * height: var(--tab-h) (density-token-driven, replaces implicit height from .tab line-height).
+ */
+
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: var(--tab-h);
+  padding: 0 var(--space-3);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-sunken);
+}
+
+/*
+ * Merged from:
+ *   .tab  — components.css line 305–311 (height 44px, line-height 44px, padding 0 --space-3)
+ *   .ip-tab — atelier-tasks.html (height --tab-h, inline-flex + gap 6px for icon child)
+ *
+ * Resolution: inline-flex + align-items center replaces line-height: 44px;
+ * height inherits from parent via stretching (align-items: center on .tabs);
+ * gap: 6px keeps icon + label spacing from .ip-tab.
+ */
+
+.tab {
+  height: var(--tab-h);
+  padding: 0 var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  color: var(--fg-faint);
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+/* Icon child — from .ip-tab svg (atelier-tasks.html) */
+.tab svg {
+  width: 13px;
+  height: 13px;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+.tab:hover {
+  color: var(--fg-muted);
+}
+
+.tab.is-on {
+  color: var(--fg);
+  border-bottom-color: var(--tint-fg-active, var(--primary));
+}
+
+.tab.is-on svg {
+  opacity: 1;
+  color: var(--tint-fg-active, var(--primary));
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+/* Count badge — inline mono counter (e.g. "Tasks 14") */
+.tab-count {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--fg-faint);
+  margin-left: var(--space-1);
+  font-variant-numeric: tabular-nums;
+}
+
+.tab.is-on .tab-count {
+  color: var(--tint-fg-active, var(--primary));
+}
+
+/* ── Reduced-motion safety ──────────────────────────────────────────
+ * .seg button/a carry background + color transitions at --motion-fast.
+ * The tab strip itself has no enter/exit animation, but gate both
+ * shapes here so any future slide-indicator animation is pre-gated.
+ * ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .seg button,
+  .seg a {
+    transition: none;
+  }
+}

@@ -1,0 +1,433 @@
+/* Part: inspector-detail  (Components / Layout)
+ * Sources:
+ *   plans/atelier/designs/atelier-tasks.html
+ *     — .tk-det-head / .tk-det-topline / .tk-det-title / .tk-det-actions
+ *     — .tk-det-meta-row / .tk-det-body
+ *     — .tk-det-grid  (fields key-value grid)
+ *     — .tk-section-label / .tk-deferred-pill
+ *     — .tk-desc  (prose block inside body)
+ *     — .tk-progress / .tk-progress > span
+ *     — .tk-timeline / .tk-tl-item
+ *     — .tk-action-bar
+ *     — .ld-split / .ld-list / .ld-divider / .ld-detail  (master-detail shell)
+ *
+ * Merge narrative:
+ *   All .tk-det-* and .ld-* classes live only in atelier-tasks.html and are
+ *   generalised here into the .ip-* family so any domain detail panel
+ *   (tasks, mail, sales, research, …) can reuse the same primitives without
+ *   a domain prefix.
+ *
+ *   .ip-tabs / .ip-tab are NOT owned here — they were merged into the
+ *   segmented-tabs part (14-segmented-tabs.css) as .tabs / .tab.
+ *
+ * Owned classes:
+ *   Master-detail shell:
+ *     .ip-split  .ip-split-list  .ip-split-divider  .ip-split-pane
+ *   Inspector pane regions:
+ *     .ip-head  .ip-topline  .ip-topline-id  .ip-topline-actions
+ *     .ip-title  .ip-meta-row
+ *     .ip-body
+ *   Section anatomy (reusable inside .ip-body):
+ *     .ip-section-label  .ip-section-label .ct  .ip-deferred-pill
+ *   Field key-value grid:
+ *     .ip-grid  .ip-grid dt  .ip-grid dd  .ip-grid dd code
+ *   Prose block:
+ *     .ip-desc
+ *   Progress bar:
+ *     .ip-progress  .ip-progress-fill
+ *   Activity timeline:
+ *     .ip-timeline  .ip-tl-item  .ip-tl-item.is-mark  .ip-tl-item.is-ok
+ *     .ip-tl-when  .ip-tl-actor  .ip-tl-actor.is-agent
+ *   Action footer:
+ *     .ip-action-bar  .ip-action-bar-spacer
+ *
+ * NOT owned here (compose into .ip-*):
+ *   .tab / .tabs            — segmented-tabs part (14)
+ *   .dense-row / variants   — table-dense-row part (20)
+ *   .badge / .chip / .tag   — badge-tag-chip part (11)
+ *   .btn / .btn-*           — button part (10)
+ *   .card / .frame          — card part (21)
+ * ---------------------------------------------------------------- */
+
+/* === Master-detail shell ======================================== */
+/*
+ * Generalised from .ld-split / .ld-list / .ld-divider / .ld-detail
+ * in atelier-tasks.html.  The caller sets --ip-list-w to control the
+ * list column width (default 360px).
+ */
+
+.ip-split {
+  --ip-list-w: 360px;
+  display: grid;
+  grid-template-columns: minmax(280px, var(--ip-list-w)) 4px minmax(420px, 1fr);
+  height: 100%;
+  overflow: hidden;
+}
+
+.ip-split-list {
+  overflow-y: auto;
+  background: var(--bg-surface);
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.ip-split-divider {
+  background: var(--border-soft);
+  cursor: col-resize;
+  transition: background var(--motion-fast) var(--ease-calm);
+}
+
+.ip-split-divider:hover {
+  background: var(--tint-fg-active, var(--primary));
+}
+
+.ip-split-pane {
+  background: var(--bg-base);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* === Inspector head ============================================= */
+/*
+ * Generalised from .tk-det-head (atelier-tasks.html line 1254–1258).
+ * The gradient fades from the workspace tint (or surface) to base,
+ * giving the header a subtle depth lift without a hard shadow.
+ */
+
+.ip-head {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-soft);
+  background: linear-gradient(
+    180deg,
+    var(--tint-bg-active, var(--bg-surface)) 0%,
+    var(--bg-base) 100%
+  );
+  flex-shrink: 0;
+}
+
+/* --- Topline row (id chip + actions) ---------------------------- */
+/*
+ * Generalised from .tk-det-topline (line 1259–1271).
+ * Contains a mono id chip on the left and an actions cluster
+ * on the right; sits above the title.
+ */
+
+.ip-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--fg-faint);
+  letter-spacing: 0.04em;
+}
+
+/* Mono identifier chip (entity type · short id) */
+.ip-topline-id {
+  background: var(--bg-base);
+  border: 1px solid var(--border-soft);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-xs);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+}
+
+/* Actions cluster (buttons, icon-buttons) */
+.ip-topline-actions {
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+/* --- Title ------------------------------------------------------ */
+/*
+ * Generalised from .tk-det-title (line 1273–1278).
+ * Display-weight heading; domain callers may swap to h2 / h3.
+ */
+
+.ip-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-h3);
+  margin: 0;
+  color: var(--fg);
+  line-height: 1.25;
+}
+
+/* --- Meta row (badges + assignee + mode + priority + due) ------- */
+/*
+ * Generalised from .tk-det-meta-row (line 1279–1282).
+ * Wrapping flex tray for .badge / .chip pills; callers compose
+ * from badge-tag-chip part (11).
+ */
+
+.ip-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+/* === Inspector body ============================================= */
+/*
+ * Generalised from .tk-det-body (line 1283–1287).
+ * Scrollable flex column; gap between sections handled at this
+ * level so individual sections stay gap-unaware.
+ */
+
+.ip-body {
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  flex: 1;
+}
+
+/* === Section label ============================================== */
+/*
+ * Generalised from .tk-section-label (line 1312–1323).
+ * Mono all-caps micro-heading that separates body sections.
+ * Optional .ct child for a count/state annotation (right-aligned).
+ */
+
+.ip-section-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+/* Right-side count annotation */
+.ip-section-label .ct {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+/* Deferred / WIP marker pill (dashed, faint) */
+.ip-deferred-pill {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  border: 1px dashed var(--border);
+  padding: 1px var(--space-1);
+  border-radius: var(--radius-xs);
+  background: transparent;
+}
+
+/* === Field key-value grid ======================================= */
+/*
+ * Generalised from .tk-det-grid (line 1288–1310).
+ * Two-column definition list: mono uppercase labels on left,
+ * values (text / chips / inline controls) on right.
+ * The 110px label column matches the source pane; callers may
+ * override via --ip-grid-label-w.
+ */
+
+.ip-grid {
+  --ip-grid-label-w: 110px;
+  display: grid;
+  grid-template-columns: var(--ip-grid-label-w) 1fr;
+  gap: var(--space-2) var(--space-4);
+  font-size: var(--text-body-sm);
+}
+
+/* dt: mono all-caps label */
+.ip-grid dt {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-faint);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  align-self: center;
+}
+
+/* dd: value cell — wrapping chip tray */
+.ip-grid dd {
+  margin: 0;
+  color: var(--fg);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-body-sm);
+}
+
+/* Inline code / monospace value chip inside a dd */
+.ip-grid dd code {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-soft);
+  padding: 1px var(--space-1);
+  border-radius: var(--radius-xs);
+  color: var(--fg);
+}
+
+/* === Prose description block ==================================== */
+/*
+ * Generalised from .tk-desc (line 1333–1342).
+ * Surfaced text block with pre-wrap for multi-line content.
+ * Appears in body sections (Description, Notes, …).
+ */
+
+.ip-desc {
+  font-size: var(--text-body-sm);
+  color: var(--fg-muted);
+  line-height: 1.6;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  white-space: pre-wrap;
+}
+
+/* === Progress bar =============================================== */
+/*
+ * Generalised from .tk-progress (line 1344–1359).
+ * The fill is a <span> or <div> child with an inline width%.
+ * 6px track height + 3px radius are fixed geometry (no token maps).
+ */
+
+.ip-progress {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-sunken);
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--border-soft);
+  min-width: 120px;
+}
+
+.ip-progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--live);
+  border-radius: 3px;
+  transition: width var(--motion-fast) var(--ease-calm);
+}
+
+/* === Activity timeline ========================================== */
+/*
+ * Generalised from .tk-timeline / .tk-tl-item (line 1444–1479).
+ * Left-rail dashed line with event nodes.  Each node carries:
+ *   .ip-tl-when   — mono timestamp
+ *   .ip-tl-actor  — mono actor chip (person or agent)
+ *   Free inline text content for the event description.
+ */
+
+.ip-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-left: 1px dashed var(--border);
+  margin-left: var(--space-2);
+  padding-left: var(--space-4);
+  position: relative;
+}
+
+.ip-tl-item {
+  position: relative;
+  padding: var(--space-1) 0;
+  font-size: var(--text-body-sm);
+  color: var(--fg-muted);
+}
+
+/* Node dot on the left rail */
+.ip-tl-item::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--space-4) - 4px);
+  top: 12px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+}
+
+/* Mark node (creation / key transition) — tint dot */
+.ip-tl-item.is-mark::before {
+  background: var(--tint-fg-active, var(--primary));
+  border-color: var(--tint-fg-active, var(--primary));
+}
+
+/* Success / resolved node — live dot */
+.ip-tl-item.is-ok::before {
+  background: var(--live);
+  border-color: var(--live);
+}
+
+/* Timestamp */
+.ip-tl-when {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-faint);
+  letter-spacing: 0.04em;
+  margin-right: var(--space-2);
+}
+
+/* Actor chip (name or agent key) */
+.ip-tl-actor {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg);
+  background: var(--bg-sunken);
+  padding: 1px var(--space-1);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-soft);
+  margin-right: var(--space-2);
+}
+
+/* Agent actor uses agent semantic colour */
+.ip-tl-actor.is-agent {
+  color: var(--agent);
+}
+
+/* === Action footer bar ========================================== */
+/*
+ * Generalised from .tk-action-bar (line 1481–1489).
+ * Sticky footer inside .ip-split-pane; sits at margin-top: auto
+ * to push to the bottom of the flex column.
+ */
+
+.ip-action-bar {
+  border-top: 1px solid var(--border-soft);
+  background: var(--bg-sunken);
+  padding: var(--space-3) var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+/* Spacer — pushes secondary actions to the right */
+.ip-action-bar-spacer {
+  flex: 1;
+}
+
+/* === Reduced-motion override ==================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .ip-split-divider,
+  .ip-progress-fill {
+    transition: none;
+  }
+}

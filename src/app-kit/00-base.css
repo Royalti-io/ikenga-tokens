@@ -1,0 +1,37 @@
+/* app-kit base — the minimal reset the Atelier panes assume.
+ * Component partials (button, badge, input, table, nav, …) land here in P1,
+ * extracted from design/shell/concepts/_shared/components.css + the locked
+ * panes. Everything references tokens.css custom properties — no literals. */
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-family: var(--font-body);
+	font-size: var(--body-size, var(--text-body));
+	line-height: var(--body-lead, var(--lead-body));
+	color: var(--fg);
+	background: var(--bg-base);
+	-webkit-font-smoothing: antialiased;
+}
+
+/* Global reduced-motion safety net (WCAG 2.3.3 · the motion foundation's
+ * enforcement contract). Per-component partials also gate their own
+ * transitions; this is the belt-and-suspenders that covers anything missed. */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}

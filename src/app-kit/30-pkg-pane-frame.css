@@ -1,0 +1,248 @@
+/*
+ * Part 30 — pkg-pane-frame  (Patterns / Layout)
+ * Tier: Patterns
+ * Source panes:
+ *   ikenga-pkgs/packages/apps/tasks/dist/tasks.css        lines 6–47   (.tk-frame, .tk-frame-head, .tk-frame-*)
+ *   plans/atelier/designs/atelier-tasks.html              lines 953–1007 (.frame, .frame-head, .frame-tabs, .frame-body*, pane-slot reset)
+ *
+ * Owned classes (this pattern only — compose on top of .card from part 21):
+ *   .frame                  — flush-fill pane container (no card chrome inside the shell)
+ *   .frame-head             — slim single-row title + action bar
+ *   .frame-title-wrap       — icon + text pairing inside .frame-head
+ *   .frame-title-mark       — leading icon colour slot
+ *   .frame-title            — display-weight view label
+ *   .frame-sub              — secondary descriptor line beneath the title
+ *   .frame-tabs             — optional secondary tab strip (below head, above body)
+ *   .frame-tab              — individual tab button inside .frame-tabs
+ *   .frame-tab.is-on        — active tab state
+ *   .frame-tab .tab-count   — mono badge trailing each tab
+ *   .frame-body             — padded body area
+ *   .frame-body-flush       — zero-padding body variant (tables, scrolling lists)
+ *   .frame-pane-slot        — host-side reset applied when a pkg mounts into the shell pane
+ *
+ * NOT owned here:
+ *   .card / .stat-card / .card-head  — part 21 (card)
+ *   .nav-item / .nav-group           — part 22 (side-menu-nav)
+ *   .btn / .btn-icon                 — part 10 (button)
+ *   .badge / .chip / .tag            — part 11 (badge-tag-chip)
+ *
+ * Design intent:
+ *   When a domain pkg is mounted into the Ikenga shell pane, the pane IS the
+ *   card chrome — there is no surrounding border, radius, or shadow to add.
+ *   `.frame` therefore strips all card decoration and fills the pane edge-to-
+ *   edge with a flex column; `.frame-head` gives a uniform header; `.frame-tabs`
+ *   gives an optional secondary tab strip; `.frame-body[-flush]` contains the
+ *   scrollable or padded content area.
+ *
+ *   When rendered on a design page OUTSIDE the shell (the atelier prototype panes),
+ *   `.frame` composites on top of `.card` (which supplies border + radius + shadow).
+ *   The `.frame-pane-slot` override removes `.card`'s chrome when the shell slot is
+ *   present (mirrors the `#tk-host > .frame` reset in atelier-tasks.html).
+ * ---------------------------------------------------------------- */
+
+
+/* ── Flush-fill container ────────────────────────────────────────── */
+/*
+ * "The pkg pane IS the container" — no card chrome inside the shell.
+ * When in prototype pages, place .card on the wrapper; .frame strips
+ * card decoration and sets the flex-column stack.
+ * Must be paired with an explicit height on the parent (shell provides this;
+ * prototype pages use the section boundary).
+ */
+
+.frame {
+  background: var(--bg-surface);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Shell-side reset: when a host pane mounts a pkg, strip the outer card chrome
+   so .card + .frame together read as a flush-fill surface, not a nested card. */
+
+.frame-pane-slot > .frame {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  flex: 1;
+  min-width: 0;
+}
+
+
+/* ── Frame head ──────────────────────────────────────────────────── */
+/*
+ * Slim single-row action bar. The shell side-menu carries domain + view
+ * navigation, so the head holds only: the active-view label (left) and the
+ * primary pane action (right, e.g. "New task").
+ *
+ * Background: a subtle tint-to-surface gradient using --tint-bg-active
+ * (workspace tint, falls back to --bg-surface when no tint is applied)
+ * so the header reads as slightly elevated above the list/body content.
+ */
+
+.frame-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-5);
+  border-bottom: 1px solid var(--border-soft);
+  background: linear-gradient(
+    180deg,
+    var(--tint-bg-active, var(--bg-surface)) 0%,
+    var(--bg-surface) 100%
+  );
+  flex-shrink: 0;
+}
+
+
+/* ── Title composition inside .frame-head ────────────────────────── */
+
+.frame-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Leading 15 × 15 icon — fixed structural icon geometry, not a spacing token */
+.frame-title-mark {
+  width: 15px;
+  height: 15px;
+  color: var(--tint-fg-active, var(--primary));
+  flex-shrink: 0;
+}
+
+.frame-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-body);
+  margin: 0;
+  color: var(--fg);
+  line-height: 1.2;
+}
+
+/* Secondary descriptor beneath the title (optional) */
+.frame-sub {
+  margin-top: 2px;            /* sub-pixel lift: structural, no space token at 2px */
+  font-size: var(--text-caption);
+  color: var(--fg-muted);
+  line-height: var(--lead-body);
+}
+
+
+/* ── Secondary tab strip ─────────────────────────────────────────── */
+/*
+ * Optional strip between .frame-head and .frame-body. Used when a pane
+ * needs a second navigation tier (e.g. finance: Overview / Transactions /
+ * Receivables / Reports). The side-menu View group is the primary tier;
+ * .frame-tabs is the secondary tier within a given view.
+ * The strip sits flush to the frame edges, height matches --tab-h.
+ */
+
+.frame-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 var(--space-3);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-sunken);
+  height: var(--tab-h);
+  flex-shrink: 0;
+}
+
+.frame-tab {
+  height: var(--tab-h);
+  padding: 0 var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-body-sm);
+  font-family: inherit;
+  color: var(--fg-faint);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  /* Underline indicator: 2px rule flush with the strip bottom border */
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;          /* pull underline flush against strip border */
+  transition:
+    color var(--motion-fast) var(--ease-calm);
+}
+
+.frame-tab:hover {
+  color: var(--fg-muted);
+}
+
+.frame-tab:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.frame-tab.is-on {
+  color: var(--fg);
+  border-bottom-color: var(--tint-fg-active, var(--primary));
+}
+
+
+/* ── Tab count badge ─────────────────────────────────────────────── */
+/*
+ * Mono numeric badge trailing the tab label. Inactive = bg-base + border-soft.
+ * Active = live-soft background (live = in-progress / active count semantic).
+ * Fixed padding 1px × 5px is structural badge geometry.
+ */
+
+.frame-tab .tab-count {
+  font-family: var(--font-mono);
+  font-size: 10px;              /* sub-scale: no text token at 10px */
+  background: var(--bg-base);
+  border: 1px solid var(--border-soft);
+  color: var(--fg-faint);
+  padding: 1px 5px;             /* structural badge geometry, not space token */
+  border-radius: var(--radius-xs);
+  margin-left: var(--space-1);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+}
+
+.frame-tab.is-on .tab-count {
+  background: var(--live-soft);
+  border-color: color-mix(in srgb, var(--live) 40%, var(--border));
+  color: var(--live);
+}
+
+
+/* ── Body variants ───────────────────────────────────────────────── */
+/*
+ * .frame-body       — padded body for prose/form/stat content.
+ * .frame-body-flush — zero-padding body for full-bleed tables, scrolling
+ *                     lists, master/detail splits. The content component
+ *                     (table, split) owns its own internal padding/borders.
+ * Both must flex-grow + set min-height:0 so the body scrolls inside the frame
+ * rather than expanding the frame past its container height.
+ */
+
+.frame-body {
+  padding: var(--space-5);
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.frame-body-flush {
+  padding: 0;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;             /* child (list/split) owns its own scroll axis */
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* ── Reduced-motion ──────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .frame-tab {
+    transition: none;
+  }
+}

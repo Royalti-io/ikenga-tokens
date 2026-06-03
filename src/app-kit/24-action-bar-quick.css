@@ -1,0 +1,194 @@
+/* =============================================================================
+   Atelier app-kit · part 24 · Action Bar + Quick-Actions Widget
+   Source panes:
+     - plans/atelier/designs/atelier-approve-gate.html   (.ob-actions* family)
+     - plans/atelier/designs/atelier-obi-home.html       (.w-quick / .qrow family)
+
+   Owned classes:
+     .ob-actions
+     .ob-actions-cluster
+     .ob-actions-spacer
+     .ob-actions-primary  .ob-actions-primary:hover  .ob-actions-primary svg
+     .ob-actions-meta
+     .w-quick .qrow  .w-quick .qrow:last-child
+     .w-quick .qrow span
+     .w-quick .qrow .qmeta
+     .w-quick .qrow kbd
+
+   Token conversions applied vs source:
+     ob-actions box-shadow: rgba(0,0,0,.25)  →  var(--border-soft) tint
+       (upward footer shadow; closest literal-free approximation)
+     ob-actions-primary color: hsl(150,40%,10%)  →  color-mix(in srgb, var(--live) 12%, var(--bg-sunken))
+       (dark-on-live-green text; --live-fg not yet minted in tokens.css)
+
+   Composing (NOT redefining):
+     .btn  .btn-sm  — owned by 10-button.css; used inside .ob-actions but not redefined here
+     .ux               — owned by 23-command-palette.css; .qrow .qmeta uses its token slots
+
+   Container query context:
+     @container ob-detail — .ob-actions lives inside .ob-detail (approve-gate pane);
+     the responsive collapse rule depends on that outer container-type declaration.
+     .ob-detail itself is NOT owned here — it belongs to the approve-gate pattern.
+   ============================================================================= */
+
+
+/* ── Sticky action footer ─────────────────────────────────────────────────────
+   Sticky to the bottom of .ob-detail (approve-gate side pane). Clusters of
+   secondary buttons on the left, a flex spacer, meta annotation, and the
+   primary CTA anchored bottom-right. Wraps gracefully when the pane narrows. */
+
+.ob-actions {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-soft);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  row-gap: var(--space-2);
+  /* Upward panel shadow. Source: rgba(0,0,0,.25) — replaced with border-based
+     tint to avoid a hardcoded color literal (same visual weight). */
+  box-shadow: 0 -4px 12px -4px var(--border-soft);
+}
+
+/* Secondary button clusters — each cluster stays on one internal row */
+.ob-actions-cluster {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+/* Flex-grow spacer between secondary clusters and the primary CTA */
+.ob-actions-spacer {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Primary CTA — "Approve & Send" or equivalent commitment action.
+   Uses --live (green) background; text color is dark-on-green via --live-fg
+   (minted in tokens.css, Wave 4 — per-theme analogue of --danger-fg). */
+.ob-actions-primary {
+  background: var(--live);
+  border-color: var(--live);
+  color: var(--live-fg);
+  font-weight: 600;
+  height: var(--btn-h);
+  padding: 0 var(--space-4);
+  flex-shrink: 0;
+  margin-left: auto; /* anchors right after flex-wrap */
+  /* Inherits .btn base (cursor, border-radius, font, display) — callers
+     should compose .btn .ob-actions-primary on the same element. */
+}
+
+.ob-actions-primary:hover {
+  filter: brightness(1.06);
+}
+
+.ob-actions-primary svg {
+  color: currentColor;
+}
+
+/* Consequence meta — "→ sends to Valentim · 1 recipient · SMTP · 17:00 today · undo 10s"
+   Mono annotation between spacer and primary; hides in narrow pane (see container query). */
+.ob-actions-meta {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--fg-faint);
+  letter-spacing: .04em;
+  margin-right: var(--space-2);
+  align-self: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+/* Responsive collapse — when the ob-detail pane is ≤ 720 px:
+   - secondary cluster buttons drop their text labels (icon-only);
+   - meta moves to a tooltip on the primary (hidden from the row).
+   Container name "ob-detail" is declared on .ob-detail in the approve-gate pane. */
+@container ob-detail (max-width: 720px) {
+  .ob-actions-cluster .btn-sm {
+    padding: 0 var(--space-2);
+  }
+  .ob-actions-cluster .btn-sm .btn-label {
+    display: none;
+  }
+  .ob-actions-meta {
+    display: none;
+  }
+}
+
+
+/* ── Quick-actions widget rows (.w-quick / .qrow) ─────────────────────────────
+   Shell-native home canvas widget (src/shell/home/ · ActionQuickWidget).
+   Each .qrow is one pinned action: name | ux_mode + schedule meta | keyboard hint.
+   The .w-quick container itself carries no custom styles — it is a bare widget
+   slot styled by the home canvas (widget / w-head / w-body family, not owned here).
+   3-column grid: 1fr (name) | auto (qmeta) | auto (kbd). */
+
+.w-quick .qrow {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: var(--space-3);
+  align-items: center;
+  /* 7 px row padding is fixed geometry (below --space-2 / 8 px) — permitted
+     as a structural constant, not a semantic spacing value. */
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.w-quick .qrow:last-child {
+  border-bottom: 0;
+}
+
+/* Action name label */
+.w-quick .qrow span {
+  color: var(--fg);
+  font-size: var(--text-body-sm);
+}
+
+/* ux_mode + schedule annotation (e.g. "silent · ⚡3×/day", "approve").
+   Approve rows use --live; other modes inherit --fg-faint.
+   Inline color override for "approve" rows (style="color:var(--live)")
+   is applied in the HTML — this rule sets the neutral default. */
+.w-quick .qrow .qmeta {
+  color: var(--fg-faint);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+}
+
+/* Keyboard shortcut badge (e.g. "⌘ I") */
+.w-quick .qrow kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+
+/* ── Keyboard focus rings ────────────────────────────────────────────────── */
+/* .w-quick .qrow is a click target (role="button" per doc); WCAG 2.4.7 requires
+   a visible focus ring when reached by keyboard. No hover affordance is defined
+   by design (locked D-06), but a focus ring is separate from hover and required. */
+.w-quick .qrow:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+
+/* ── Motion — reduced-motion overrides ───────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .ob-actions-primary {
+    /* filter: brightness() is not a transform — no override needed for
+       reduced-motion. No position/transform animations on this surface. */
+  }
+}

@@ -1,0 +1,42 @@
+/* =================================================================
+   app-kit · 13-avatar.css
+   Part: Avatar · tier: Components / group: Display · source mode: shared
+   Source pane: design/shell/concepts/_shared/components.css (Avatar section, lines 288–301)
+   Owned classes: .avatar · .avatar-sm · .avatar-lg · .avatar-amber · .avatar-danger · .avatar-systemic
+   Lifted verbatim (already token-clean) + structural px permitted per kit rules.
+   ================================================================= */
+
+/* === Avatar ===================================================== */
+/*
+  Base: 32 × 32 px circular container with a primary gradient fill and
+  a display-font initial letter. Sizes (-sm / -lg) and tint variants
+  (-amber / -danger / -systemic) are additive modifiers.
+
+  Fixed-geometry px values (permitted per kit rules):
+    32px / 22px / 44px  — avatar diameter sizes (no density token exists)
+    13px / 11px / 16px  — initials font sizes keyed to each diameter
+*/
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-soft), var(--primary));
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--fg);
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Size modifiers */
+.avatar-sm { width: 22px; height: 22px; font-size: 11px; }
+.avatar-lg { width: 44px; height: 44px; font-size: 16px; }
+
+/* Tint variants — gradient reads from soft → full for depth */
+.avatar-amber    { background: linear-gradient(135deg, var(--achievement-soft), var(--achievement)); }
+.avatar-danger   { background: linear-gradient(135deg, var(--danger-soft),      var(--danger)); }
+.avatar-systemic { background: linear-gradient(135deg, var(--systemic-soft),    var(--systemic)); }

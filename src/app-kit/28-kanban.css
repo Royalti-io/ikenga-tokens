@@ -1,0 +1,353 @@
+/* Part: kanban  (Components / Layout)
+ * Sources: plans/atelier/designs/atelier-content-kanban.html  (.kb-board, .kb-col*, .kb-card*)
+ *          plans/atelier/designs/atelier-strategy-board.html  (.kb-board, .kb-col*, .kb-card*)
+ *          Both panes carry the identical .kb-* block; the strategy board adds
+ *          .okr-card-prog extension children (owned here) on top of the shared tile.
+ *
+ * Owned classes:
+ *   Board:   .kb-board
+ *   Column:  .kb-col  .kb-col-head  .kb-col-name  .kb-col-dot  .kb-col-meta  .kb-col-agg
+ *            .kb-col-body
+ *   Card:    .kb-card  .kb-card-title  .kb-card-sub  .kb-card-foot  .kb-card-amt
+ *            .kb-card-owner  .kb-mini-avatar  .kb-mini-avatar.is-agent
+ *   Add row: .kb-add
+ *   OKR ext: .okr-card-prog  .okr-kr  .okr-kr-row  .okr-bar  .okr-bar.is-low  .okr-bar.is-mid
+ *            .okr-overall  .okr-overall .ring
+ *
+ * NOT owned here — compose into .kb-card:
+ *   .card               — card (part 21) — owned by the card part; .kb-card does NOT extend
+ *                         .card (it uses --radius-sm not --radius-lg) but references the same
+ *                         surface token recipe independently.
+ *   .badge / .chip      — badge-tag-chip part
+ *   .ux-dot             — shell primitive (status dot)
+ *
+ * Merge narrative:
+ *   Both atelier-content-kanban.html and atelier-strategy-board.html carry verbatim copies of
+ *   the .kb-* block in their <style> tags. The only substantive differences are:
+ *     (a) the review-patch block (atelier-review-css id) adds the stretch-column rule, the
+ *         right-edge fade mask, and .kb-col-agg — all folded in here as the canonical form.
+ *     (b) atelier-strategy-board.html adds .okr-card-prog / .okr-kr* / .okr-bar* / .okr-overall
+ *         as extension children inside .kb-card — owned here because they are structurally
+ *         coupled to the tile and appear in no other part.
+ *   Verbatim hardcoded pixel values in source that have no token (8px dot diameter, 16px
+ *   mini-avatar, 4px progress bar height) are structural fixed-geometry and are preserved as px.
+ * ---------------------------------------------------------------- */
+
+/* === Board ===================================================== */
+/* Full-bleed horizontal scroll container. Columns fill the board's
+   full height (review-patch E-01: align-items:stretch). A right-edge
+   mask gradient signals more columns to the right. */
+
+.kb-board {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  overflow-x: auto;
+  height: 100%;
+  align-items: stretch;                          /* E-01 review patch */
+  -webkit-mask-image: linear-gradient(
+    90deg, var(--bg-base) 94%, transparent
+  );
+  mask-image: linear-gradient(
+    90deg, var(--bg-base) 94%, transparent
+  );
+}
+
+/* === Column ==================================================== */
+/* Fixed-width flex column. Background uses --bg-sunken so it reads
+   as a recessed lane against the pane's --bg-base background. */
+
+.kb-col {
+  flex: 0 0 264px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  min-height: 100%;                              /* E-01 review patch */
+}
+
+/* --- Column header ---------------------------------------------- */
+/* Sticky within a scrolling column body so the stage label is always
+   visible as the user scrolls through many cards. */
+
+.kb-col-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-3) var(--space-2);
+  position: sticky;
+  top: 0;
+}
+
+/* Stage label — mono uppercase with a colour dot prefix */
+
+.kb-col-name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* 8px dot: structural fixed-geometry, no space token maps to 8px */
+.kb-col-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  /* colour is supplied inline via style="background:var(--<semantic>);"
+     — the stage palette is caller-defined, not hardcoded here */
+}
+
+/* Card count / aggregate next to the stage name */
+.kb-col-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-faint);
+}
+
+/* OKR aggregate rollup (E-07 review patch) — replaces .kb-col-meta
+   with a richer "N obj · avg XX%" summary line. */
+.kb-col-agg {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-muted);
+}
+.kb-col-agg b { color: var(--fg); }
+
+/* --- Column body ------------------------------------------------ */
+/* Scrollable card stack. flex:1 1 auto lets it consume leftover
+   column height (E-01 review patch). */
+
+.kb-col-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0 var(--space-2) var(--space-3);
+  overflow-y: auto;
+  flex: 1 1 auto;                                /* E-01 review patch */
+}
+
+/* === Tile / card =============================================== */
+/* .kb-card is the kanban tile surface. It deliberately does NOT
+   extend .card from part 21 because it uses --radius-sm (a tighter
+   corner suited to dense stacked items) rather than --radius-lg.
+   The surface recipe (--bg-surface + --border-soft) is the same;
+   it is duplicated intentionally to keep the tile standalone. */
+
+.kb-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  cursor: grab;
+  transition:
+    border-color var(--motion-fast) var(--ease-calm),
+    transform   var(--motion-fast) var(--ease-calm);
+}
+
+/* Drag affordance: lift + border intensify on hover.
+   translateY(-1px) is structural fixed-geometry (1 CSS px lift). */
+.kb-card:hover {
+  border-color: var(--border);
+  transform: translateY(-1px);
+}
+
+/* Dragging in progress — card becomes the ghost placeholder.
+   Callers add .is-dragging via JS during the drag lifecycle. */
+.kb-card.is-dragging {
+  cursor: grabbing;
+  opacity: 0.5;
+  transform: none;
+}
+
+/* Drop-target column highlight — callers add .is-drop-target to
+   .kb-col when the dragged card is hovering above it. */
+.kb-col.is-drop-target {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--border-soft));
+  background: color-mix(in srgb, var(--primary-soft) 40%, var(--bg-sunken));
+}
+
+/* Keyboard focus — the card as an interactive element must have a
+   visible focus ring when focused via keyboard navigation. */
+.kb-card:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-color: var(--border);
+}
+
+/* --- Tile internals -------------------------------------------- */
+
+.kb-card-title {
+  font-size: var(--text-body-sm);
+  font-weight: 500;
+  color: var(--fg);
+  line-height: 1.35;
+  margin-bottom: 5px;                            /* tight layout fixed-geometry */
+}
+
+.kb-card-sub {
+  font-size: var(--text-caption);
+  color: var(--fg-muted);
+  margin-bottom: var(--space-2);
+}
+
+/* Footer row: meta amount (left) + owner (right) */
+.kb-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+/* Mono metadata slot — word count, amount, format label, etc. */
+.kb-card-amt {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--fg);
+}
+
+/* Owner attribution row — status dot + mini-avatar initials */
+.kb-card-owner {
+  display: flex;
+  align-items: center;
+  gap: 5px;                                      /* tight fixed-geometry between dot and avatar */
+  font-size: 10px;
+  color: var(--fg-faint);
+  font-family: var(--font-mono);
+}
+
+/* 16×16px avatar circle — structural icon size, no space token */
+.kb-mini-avatar {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 8.5px;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--primary-soft), var(--primary));
+  color: var(--fg);
+}
+
+/* Agent avatar variant — systemic palette gradient */
+.kb-mini-avatar.is-agent {
+  background: linear-gradient(
+    135deg,
+    var(--systemic-soft, var(--bg-raised)),
+    var(--systemic)
+  );
+}
+
+/* === Add-card row ============================================== */
+/* Dashed affordance at the bottom of each column body.
+   margin-top: --space-1 keeps it slightly separated from the last
+   card (E-01 review patch). */
+
+.kb-add {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-faint);
+  padding: var(--space-2);
+  text-align: center;
+  border: 1px dashed var(--border-soft);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  margin-top: var(--space-1);                    /* E-01 review patch */
+}
+
+.kb-add:hover {
+  color: var(--fg-muted);
+  border-color: var(--border);
+}
+
+/* === OKR card extension (.okr-*) =============================== */
+/* Injected inside .kb-card on the Strategy Board pane only.
+   These classes are structurally coupled to the tile; they do not
+   appear standalone and are not consumed by any other part. */
+
+/* Progress block: grid of key-result rows inside the tile body */
+.okr-card-prog {
+  margin-top: var(--space-2);
+  display: grid;
+  gap: 6px;                                      /* tight fixed-geometry */
+}
+
+/* Single key-result row: label + % bar */
+.okr-kr { display: grid; gap: 3px; }
+
+.okr-kr-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: var(--fg-muted);
+}
+.okr-kr-row .pct {
+  font-family: var(--font-mono);
+  color: var(--fg);
+}
+
+/* Thin progress bar — 4px height is structural fixed-geometry */
+.okr-bar {
+  height: 4px;
+  border-radius: 2px;                            /* fixed half of 4px */
+  background: var(--bg-sunken);
+  overflow: hidden;
+}
+.okr-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--achievement);                /* default: on-track gold */
+}
+.okr-bar.is-low  > span { background: var(--danger); }
+.okr-bar.is-mid  > span { background: var(--systemic); }
+
+/* Overall % badge with mini ring chart */
+.okr-overall {
+  display: flex;
+  align-items: center;
+  gap: 6px;                                      /* tight fixed-geometry */
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg);
+}
+
+/* 13×13px conic ring: structural fixed-geometry icon size.
+   --p is an integer 0–100 set inline by the caller. */
+.okr-overall .ring {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--achievement) calc(var(--p) * 1%),
+    var(--bg-sunken) 0
+  );
+}
+
+/* === Keyboard focus rings ======================================= */
+/* .kb-add is a click/keyboard target (role="button" per doc);
+   WCAG 2.4.7 requires a visible focus ring. Added here as the
+   canonical ring; callers must also supply role="button" + tabindex="0". */
+
+.kb-add:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* === Reduced-motion override =================================== */
+/* The .kb-card hover lift and border transition are aesthetic only.
+   Suppress them when the user has opted out of motion. */
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-card {
+    transition: none;
+  }
+  .kb-card:hover {
+    transform: none;
+  }
+}

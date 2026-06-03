@@ -1,0 +1,177 @@
+/* =============================================================================
+   Atelier app-kit · part 26 · Feedback State
+   Source panes (verbatim lift — shared across all 17 panes):
+     - plans/atelier/designs/atelier-tasks.html          (canonical source, §atelier-review-css)
+     - plans/atelier/designs/atelier-mail.html           (identical)
+     - plans/atelier/designs/atelier-outbound-email.html (identical)
+     - plans/atelier/designs/atelier-outbound-sequences.html (identical)
+     - plans/atelier/designs/atelier-outbound-social.html    (identical)
+     - plans/atelier/designs/atelier-finance.html            (identical)
+     - plans/atelier/designs/atelier-research.html       (height:100% variant)
+     - plans/atelier/designs/atelier-content-kanban.html (height:100% variant)
+
+   Owned classes:
+     .atelier-state
+     .atelier-state.is-empty
+     .atelier-state.is-error
+     .atelier-state.is-loading
+     .atelier-state.is-streaming
+     .atelier-spin
+     .atelier-prog
+     .atelier-prog > span
+
+   Merge — tasks-local aliases folded in:
+     .tk-empty   →  .atelier-state.is-empty   (no-content placeholder, icon + h3)
+     .tk-error   →  .atelier-state.is-error   (alert icon + danger tint, h3)
+     .tk-loading →  .atelier-state.is-loading (spinner child + text)
+
+   All values reference @ikenga/tokens custom properties.
+   No hardcoded hex or hsl color literals.
+   Fixed-geometry px values (permitted): 2.5px spinner border, 6px progress height,
+   34px icon size, 26px spinner diameter — these are structural, not theme-sensitive.
+   ============================================================================= */
+
+/* ── Container ───────────────────────────────────────────────────────────────
+   Default: centred placeholder for any pane-level empty / loading / error state.
+   min-height:60vh matches the compact pane slots (most panes).
+   Use .atelier-state.is-full-pane to switch to height:100% for full-height panes
+   like atelier-research.html and atelier-content-kanban.html.
+   ──────────────────────────────────────────────────────────────────────────── */
+.atelier-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: var(--space-3);
+  text-align: center;
+  padding: var(--space-12);
+  color: var(--fg-faint);
+}
+
+/* Full-pane variant — research / kanban contexts where the state fills 100% height */
+.atelier-state.is-full-pane {
+  min-height: unset;
+  height: 100%;
+}
+
+/* Icon slot — callers pass a 34×34 SVG with class "ix" inside .atelier-state */
+.atelier-state .ix {
+  width: 34px;
+  height: 34px;
+  color: var(--fg-faint);
+}
+
+/* Heading — display font, muted tone, no margin */
+.atelier-state h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-h3);
+  color: var(--fg-muted);
+  margin: 0;
+}
+
+/* Body copy — small type, comfortable measure */
+.atelier-state p {
+  margin: 0;
+  font-size: var(--text-body-sm);
+  max-width: 42ch;
+  line-height: 1.55;
+}
+
+/* ── Semantic variants ───────────────────────────────────────────────────────
+   is-empty   — default (icon + h3 in fg-faint / fg-muted). No extra rule needed;
+                the base .atelier-state already encodes empty-state look.
+   is-error   — danger tint on container + heading.
+   is-loading — spinner child replaces icon; base colors apply.
+   is-streaming — indeterminate progress bar child; base colors apply.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* .is-empty is the base appearance — explicitly naming the class aids JS toggling */
+.atelier-state.is-empty {
+  /* inherits base styles; no additional overrides */
+}
+
+/* Error state: everything shifts to danger palette */
+.atelier-state.is-error {
+  color: var(--danger);
+}
+
+.atelier-state.is-error h3 {
+  color: var(--danger);
+}
+
+.atelier-state.is-error .ix {
+  color: var(--danger);
+}
+
+/* Loading + streaming states inherit the base fg-faint / fg-muted colors;
+   the spinner or progress bar is placed as a direct child by the caller. */
+.atelier-state.is-loading {
+  /* no additional overrides — spinner child (.atelier-spin) is the visual signal */
+}
+
+.atelier-state.is-streaming {
+  /* no additional overrides — progress child (.atelier-prog) is the visual signal */
+}
+
+/* ── Spinner ─────────────────────────────────────────────────────────────────
+   A single CSS border-trick spinner. 2.5px border is structural pixel geometry.
+   26×26 is structural — not a spacing token (the spinner is an inline accent, not
+   a touch target or layout unit).
+   ──────────────────────────────────────────────────────────────────────────── */
+.atelier-spin {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2.5px solid var(--border-soft);
+  border-top-color: var(--tint-fg-active, var(--primary));
+  animation: atelier-spin var(--motion-base, 720ms) linear infinite;
+}
+
+@keyframes atelier-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Reduced-motion: collapse to a static element (no rotation) */
+@media (prefers-reduced-motion: reduce) {
+  .atelier-spin {
+    animation: none;
+    /* retain the border-top highlight as a static accent so the element is still
+       recognisable as a "working" indicator without motion */
+  }
+}
+
+/* ── Indeterminate progress bar ──────────────────────────────────────────────
+   Used in .is-streaming state to communicate that Chi is working. The shimmer
+   span sweeps left→right indefinitely. 6px height + pill radius are structural.
+   ──────────────────────────────────────────────────────────────────────────── */
+.atelier-prog {
+  width: min(420px, 60%);
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-sunken);
+  overflow: hidden;
+}
+
+.atelier-prog > span {
+  display: block;
+  height: 100%;
+  width: 40%;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, transparent, var(--achievement), transparent);
+  animation: atelier-stream 1.4s var(--ease-calm) infinite;
+}
+
+@keyframes atelier-stream {
+  0%   { margin-left: -40%; }
+  100% { margin-left: 100%; }
+}
+
+/* Reduced-motion: freeze shimmer at center so the bar is still visible */
+@media (prefers-reduced-motion: reduce) {
+  .atelier-prog > span {
+    animation: none;
+    margin-left: 30%; /* static center position */
+  }
+}
