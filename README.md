@@ -1,6 +1,6 @@
 # @ikenga/tokens
 
-[![Version](https://img.shields.io/badge/version-v0.0.0-blue.svg)](https://github.com/Royalti-io/ikenga-tokens/releases)
+[![Version](https://img.shields.io/badge/version-v0.0.0-blue.svg)](https://github.com/ikenga-hq/ikenga-tokens/releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 > Canonical design tokens for Ikenga — one source of truth for the CSS custom properties
@@ -9,7 +9,7 @@
 ## What it is
 
 `@ikenga/tokens` is the design-system package consumed by the
-[Ikenga shell](https://github.com/Royalti-io/ikenga) and every UI pkg. It ships the full
+[Ikenga shell](https://github.com/ikenga-hq/ikenga) and every UI pkg. It ships the full
 set of `:root` custom properties (dark default + light) plus TypeScript helpers, so a pkg
 mini-app looks native inside the shell without redefining a palette.
 
@@ -64,7 +64,7 @@ For live theme flips (user toggles dark/light at runtime), the shell additionall
 ## Links
 
 - [ikenga.dev](https://ikenga.dev) — site + docs
-- [`ikenga`](https://github.com/Royalti-io/ikenga) — the desktop shell
+- [`ikenga`](https://github.com/ikenga-hq/ikenga) — the desktop shell
 
 ## License
 
