@@ -1,5 +1,11 @@
 # @ikenga/tokens
 
+## 0.4.1
+
+### Patch Changes
+
+- 2caaea2: chore: repoint org references at ikenga-hq (#8)
+
 ## 0.4.0
 
 ### Minor Changes
